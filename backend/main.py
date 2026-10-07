@@ -22,12 +22,15 @@ try:
 except Exception as e:
     print(f"Notice: .env loading skipped ({e})")
 
+from pydantic import BaseModel
 from .spatial_index import spatial_index
 from .data_generator import get_all_hotspots
 from .app.harmonizer import HarmonizationPipeline, get_real_satellite_detections
 from .app.ml import fire_spread_predictor, fire_ml_model
 from .app.rl import rl_dispatcher
 from .app.telemetry import metrics_manager, langsmith_tracer
+from .app.rag import rag_retriever
+from .app.chat import copilot_service
 
 app = FastAPI(
     title="FireGuard AI: NASA Multi-Sensor Wildfire Mission Control",
@@ -415,6 +418,88 @@ async def websocket_telemetry_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         if websocket in active_websockets:
             active_websockets.remove(websocket)
+
+# =========================================================================
+# 7b. AI Copilot Chatbot & RAG (Retrieval-Augmented Generation) Endpoints
+# =========================================================================
+
+class ChatMessagePayload(BaseModel):
+    message: str
+    history: Optional[List[Dict[str, str]]] = None
+    viewport: Optional[Dict[str, Any]] = None
+    provider: Optional[str] = "builtin"
+    api_key: Optional[str] = None
+    model: Optional[str] = None
+
+@app.post("/api/chat")
+async def chat_with_copilot(payload: ChatMessagePayload):
+    """
+    Primary AI Copilot conversational endpoint.
+    Performs RAG knowledge retrieval, grounds on real-time spatial telemetry,
+    determines interactive actions (fly-to, scenario trigger), and logs LangSmith traces.
+    """
+    response = copilot_service.query(
+        message=payload.message,
+        history=payload.history,
+        viewport=payload.viewport,
+        provider=payload.provider or "builtin",
+        api_key=payload.api_key,
+        model=payload.model
+    )
+    return response
+
+@app.get("/api/chat/suggestions")
+async def get_chat_suggestions():
+    """
+    Returns dynamic prompt suggestions tailored to current active fire hotspots.
+    """
+    hotspots = spatial_index.hotspots
+    top_frp = 0.0
+    if hotspots:
+        top_frp = max(h.get("harmonized_frp", 0.0) for h in hotspots)
+    
+    suggestions = [
+        {"icon": "🔥", "label": "Global Fire Status", "prompt": "What is the global wildfire summary right now?"},
+        {"icon": "🎯", "label": f"Peak Fire ({top_frp:.0f} MW)", "prompt": "Show me the highest FRP fire hotspot globally"},
+        {"icon": "⚡", "label": "Ridge Crisis Scenario", "prompt": "Run the mountain ridge wildfire crisis scenario"},
+        {"icon": "🛰️", "label": "MODIS vs VIIRS RAG", "prompt": "Explain the difference between MODIS and VIIRS sensor resolution and why we harmonize them"},
+        {"icon": "🇧🇩", "label": "Bangladesh Telemetry", "prompt": "বাংলাদেশে আগুনের অবস্থা কী এবং সুন্দরবন সুরক্ষিত আছে কি?"},
+        {"icon": "🌲", "label": "PPO RL Tactics", "prompt": "How does the PPO agent allocate Air Tankers and cut firelines?"},
+    ]
+    return {"suggestions": suggestions}
+
+@app.get("/api/chat/status")
+async def get_chat_status():
+    """
+    Reports AI Copilot status, active providers, RAG corpus size, and LangSmith observability.
+    """
+    return {
+        "status": "ONLINE",
+        "rag_documents_indexed": len(rag_retriever.documents),
+        "providers": {
+            "builtin": {"available": True, "description": "Built-in Mission Control AI (Instant, Zero-Config, Multilingual)"},
+            "gemini": {"available": bool(os.getenv("GEMINI_API_KEY")), "description": "Google Gemini 2.5 / 1.5 Flash"},
+            "openai": {"available": bool(os.getenv("OPENAI_API_KEY")), "description": "OpenAI GPT-4o-mini"}
+        },
+        "langsmith_tracing": os.getenv("LANGSMITH_TRACING", "false").lower() == "true",
+        "supported_languages": ["en", "bn", "banglish"]
+    }
+
+@app.get("/api/rag/search")
+async def search_rag_knowledge(
+    q: str = Query(..., min_length=2, description="Search query across remote sensing knowledge base"),
+    top_k: int = Query(3, ge=1, le=10, description="Number of knowledge chunks to retrieve")
+):
+    """
+    Direct RAG knowledge base search endpoint.
+    Retrieves vectorized documentation chunks on NASA FIRMS, ML spatial splits, PPO RL, and ICS playbooks.
+    """
+    chunks = rag_retriever.retrieve(query=q, top_k=top_k)
+    return {
+        "query": q,
+        "count": len(chunks),
+        "chunks": chunks
+    }
 
 # =========================================================================
 # 8. Core Hotspot & Geospatial Endpoints (Preserving 100% Backward Compatibility)

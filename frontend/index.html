@@ -45,6 +45,10 @@
                 <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 <span>Earth Impact</span>
             </button>
+            <button id="btn-nav-copilot" class="mode-btn copilot-nav-btn" title="Open PulseAI Tactical Wildfire Copilot & RAG Assistant">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                <span>PulseAI Copilot</span>
+            </button>
         </div>
 
         <div class="header-right">
@@ -994,6 +998,127 @@ class WildfireSuppressionEnv(gym.Env):
                     <p><strong>3. Reinforcement Learning (RL)</strong> elevates EarthPulse 3D from <em>prediction</em> to <em>autonomous action</em>, computing optimal aircraft and crew dispatch to cut off firelines before they reach homes.</p>
                     <p><strong>4. Cesium 3D & Grafana</strong> deliver a complete mission-control suite: photorealistic WebGL terrain visualization paired with enterprise-grade operational telemetry."</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- PulseAI Wildfire Copilot & Tactical Telemetry Assistant Subsystem            -->
+    <!-- ========================================================================= -->
+
+    <!-- PulseAI Floating Launcher Button -->
+    <button id="btn-open-chatbot" class="ai-copilot-launcher" title="PulseAI: Tactical Wildfire & Biosphere Copilot">
+        <div class="launcher-pulse-ring"></div>
+        <div class="launcher-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="launcher-text">
+            <span class="lt-title">PulseAI</span>
+            <span class="lt-sub">Copilot</span>
+        </div>
+        <span class="launcher-live-dot"></span>
+    </button>
+
+    <!-- PulseAI Tactical Copilot Chat Panel -->
+    <div id="pulse-ai-panel" class="pulse-ai-panel glass-panel hidden">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-header-brand">
+                <div class="chat-brand-icon">🛰️</div>
+                <div class="chat-brand-titles">
+                    <div class="chat-title-row">
+                        <h3>PulseAI Copilot</h3>
+                        <span class="chat-rag-tag">RAG GROUNDED</span>
+                    </div>
+                    <p class="chat-subtitle"><span class="live-status-dot"></span> NASA FIRMS · ML · RL Prescriptions</p>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <span id="chat-status-pill" class="chat-engine-pill">Built-in AI</span>
+                <button id="btn-chatbot-settings" class="chat-btn-icon" title="AI Engine & API Key Settings">⚙️</button>
+                <button id="btn-minimize-chatbot" class="chat-btn-icon" title="Minimize Chat">_</button>
+                <button id="btn-close-chatbot" class="chat-btn-icon" title="Close Chat">&times;</button>
+            </div>
+        </div>
+
+        <!-- Quick Prompt Suggestion Chips -->
+        <div class="chat-suggestions-bar">
+            <span class="suggestions-label">Suggestions:</span>
+            <div id="chat-suggestions-container" class="suggestions-chips-row">
+                <!-- Populated dynamically via /api/chat/suggestions -->
+            </div>
+        </div>
+
+        <!-- Messages Thread Container -->
+        <div id="chat-messages-container" class="chat-messages-container">
+            <!-- Messages added dynamically -->
+        </div>
+
+        <!-- Chat Input Footer -->
+        <div class="chat-footer">
+            <div class="chat-input-controls-row">
+                <label class="chat-toggle-label" title="Send visible camera bounds and altitude to ground AI in your view">
+                    <input type="checkbox" id="chat-attach-viewport" checked>
+                    <span>🛰️ Attach Viewport</span>
+                </label>
+                <button id="btn-clear-chat" class="chat-btn-clear" title="Clear conversation history">Clear</button>
+            </div>
+            <div class="chat-input-row">
+                <textarea id="chat-user-input" class="chat-textarea" placeholder="Ask about fires, 'Fly to California', 'আমাজনে যাও', RAG specs..." rows="1"></textarea>
+                <button id="btn-voice-input" class="chat-voice-btn" title="Voice Input (Click to speak)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                        <line x1="8" y1="22" x2="16" y2="22"/>
+                    </svg>
+                </button>
+                <button id="btn-send-chat" class="chat-send-btn" title="Send Message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PulseAI Settings Modal -->
+    <div id="chat-settings-modal" class="chat-settings-modal hidden">
+        <div class="chat-settings-backdrop"></div>
+        <div class="chat-settings-card glass-panel">
+            <div class="settings-header">
+                <h4>PulseAI Engine Configuration</h4>
+                <button id="btn-close-chat-settings" class="drawer-close-btn">&times;</button>
+            </div>
+            <div class="settings-body">
+                <div class="setting-item">
+                    <label for="chat-setting-provider">AI Reasoning Provider</label>
+                    <select id="chat-setting-provider" class="hud-dropdown">
+                        <option value="builtin">Built-in Mission Control AI (Instant, Zero Config, Multilingual)</option>
+                        <option value="gemini">Google Gemini 2.5 / 1.5 Flash (Cloud LLM)</option>
+                        <option value="openai">OpenAI GPT-4o-mini (Cloud LLM)</option>
+                    </select>
+                    <span class="setting-hint">The Built-in engine requires zero keys and is deeply grounded in real-time telemetry.</span>
+                </div>
+                <div class="setting-item" id="chat-key-group" style="display:none;">
+                    <label for="chat-setting-apikey">Custom API Key</label>
+                    <input type="password" id="chat-setting-apikey" placeholder="Enter Gemini (AIza...) or OpenAI (sk-...) Key" class="settings-input">
+                    <span class="setting-hint">Key is saved securely in your browser's local storage and used only for your queries.</span>
+                </div>
+                <div class="settings-status-box">
+                    <div class="stat-line"><span>RAG Knowledge Base:</span> <strong>9 Curated Technical Modules Indexed</strong></div>
+                    <div class="stat-line"><span>Supported Languages:</span> <strong>English, Bengali (বাংলা), Banglish</strong></div>
+                    <div class="stat-line"><span>LangSmith Audit:</span> <strong style="color:#10b981;">Active Tracing & Anti-Hallucination</strong></div>
+                </div>
+            </div>
+            <div class="settings-footer">
+                <button id="btn-save-chat-settings" class="btn-primary">Save & Apply</button>
             </div>
         </div>
     </div>

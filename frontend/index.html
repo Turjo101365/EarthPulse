@@ -731,7 +731,10 @@
                 <span class="live-status-dot"></span>
                 <span>LangSmith AI Reasoning Audit</span>
             </div>
-            <button id="btn-close-langsmith" class="drawer-close-btn">&times;</button>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <a href="https://smith.langchain.com/o/c2c7c9be-39c6-4cf8-b26b-8542dca4cff4/projects/p/f8766ac0-20eb-4c2c-9e9c-00bec52b8662?onboarding=EarthPulse3D" target="_blank" rel="noopener" class="langsmith-link-btn" title="Open LangSmith Project Dashboard">EarthPulse3D ↗</a>
+                <button id="btn-close-langsmith" class="drawer-close-btn">&times;</button>
+            </div>
         </div>
         <div class="ls-body">
             <div class="ls-meta-row">
@@ -741,6 +744,10 @@
             <div class="ls-meta-row">
                 <span id="ls-tokens">525 tokens (380 prompt / 145 comp)</span>
                 <span>Guardrail: <strong id="ls-guardrail-status" style="color:#10b981;">PASSED (100% grounded)</strong></span>
+            </div>
+            <div class="ls-meta-row" style="align-items:center;">
+                <span>Cloud: <strong id="ls-cloud-status" style="color:#10b981;">Live Synced 🟢</strong></span>
+                <button id="btn-ls-test-emit" style="background:#059669;border:1px solid #10b981;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;">Emit Trace ⚡</button>
             </div>
             <div class="ls-section-title">Telemetry Input Payload</div>
             <pre class="ls-code" id="ls-input-payload">{}</pre>

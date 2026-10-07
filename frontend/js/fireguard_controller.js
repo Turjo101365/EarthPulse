@@ -35,6 +35,10 @@ export class FireGuardController {
                     const msg = JSON.parse(event.data);
                     if (msg.type === 'CRISIS_SCENARIO_TRIGGERED') {
                         this.handleRemoteScenario(msg);
+                    } else if (msg.type === 'HOTSPOTS_CLEARED') {
+                        if (window.cameraController) {
+                            window.cameraController.scheduleFetch();
+                        }
                     }
                 } catch (e) {
                     console.warn('WS message parse error:', e);
@@ -96,6 +100,23 @@ export class FireGuardController {
             });
         }
 
+        const btnEmitTest = document.getElementById('btn-ls-test-emit');
+        if (btnEmitTest) {
+            btnEmitTest.addEventListener('click', async () => {
+                btnEmitTest.textContent = 'Emitting...';
+                btnEmitTest.disabled = true;
+                const result = await window.dataService.emitTestLangSmithTrace();
+                if (result && result.trace) {
+                    this.displayLangSmithTrace(result.trace, null);
+                }
+                btnEmitTest.textContent = 'Emitted! ⚡';
+                setTimeout(() => {
+                    btnEmitTest.textContent = 'Emit Trace ⚡';
+                    btnEmitTest.disabled = false;
+                }, 2000);
+            });
+        }
+
         // Layer Toggles
         const toggleSpread = document.getElementById('toggle-xgboost-spread');
         if (toggleSpread) {
@@ -116,6 +137,9 @@ export class FireGuardController {
         // Periodically refresh Grafana telemetry stats
         this.updateTelemetryHUD();
         setInterval(() => this.updateTelemetryHUD(), 6000);
+
+        // Initialize NASA FIRMS ML Controls & Metrics
+        this.initFirmsMLControls();
     }
 
     async updateTelemetryHUD() {
@@ -311,6 +335,20 @@ export class FireGuardController {
         const elGuardrail = document.getElementById('ls-guardrail-status');
         if (elGuardrail) elGuardrail.textContent = `${trace.hallucination_check.status} (${trace.hallucination_check.facts_grounded_pct})`;
 
+        const elCloudStatus = document.getElementById('ls-cloud-status');
+        if (elCloudStatus) {
+            if (trace.cloud_synced) {
+                elCloudStatus.textContent = 'Live Synced 🟢';
+                elCloudStatus.style.color = '#10b981';
+            } else if (trace.sync_error) {
+                elCloudStatus.textContent = 'Sync Error ⚠️';
+                elCloudStatus.style.color = '#f59e0b';
+            } else {
+                elCloudStatus.textContent = 'Local Trace 🟡';
+                elCloudStatus.style.color = '#94a3b8';
+            }
+        }
+
         // Populate unit action list
         const unitList = document.getElementById('ls-units-dispatched-list');
         if (unitList && rlPlan && rlPlan.units) {
@@ -336,5 +374,129 @@ export class FireGuardController {
 
     handleRemoteScenario(msg) {
         this.runMountainRidgeScenario();
+    }
+
+    initFirmsMLControls() {
+        this.loadFirmsMetrics();
+
+        const btnXGB = document.getElementById('btn-retrain-xgb');
+        if (btnXGB) {
+            btnXGB.addEventListener('click', () => this.retrainModel('xgboost_arm64', btnXGB));
+        }
+
+        const btnMPS = document.getElementById('btn-retrain-mps');
+        if (btnMPS) {
+            btnMPS.addEventListener('click', () => this.retrainModel('torch_mps', btnMPS));
+        }
+
+        const btnSync = document.getElementById('btn-sync-firms');
+        if (btnSync) {
+            btnSync.addEventListener('click', () => this.syncFirmsLive(btnSync));
+        }
+
+        const btnClear = document.getElementById('btn-clear-data');
+        if (btnClear) {
+            btnClear.addEventListener('click', () => this.clearAllData(btnClear));
+        }
+    }
+
+    async clearAllData(btnEl) {
+        const feedback = document.getElementById('firms-train-feedback');
+        const origText = btnEl ? btnEl.textContent : '';
+        if (btnEl) {
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Clearing...';
+        }
+        if (feedback) feedback.textContent = 'Clearing all active hotspots...';
+
+        try {
+            const res = await fetch('/api/hotspots/clear', { method: 'POST' });
+            const data = await res.json();
+            if (data.status === 'SUCCESS') {
+                if (feedback) feedback.textContent = '🗑️ All data points successfully removed!';
+                if (window.cameraController) {
+                    window.cameraController.scheduleFetch();
+                }
+            }
+        } catch (err) {
+            if (feedback) feedback.textContent = `❌ Clear error: ${err.message}`;
+        } finally {
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.textContent = origText;
+            }
+        }
+    }
+
+    async loadFirmsMetrics() {
+        try {
+            const res = await fetch('/api/ml/metrics');
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const elMps = document.getElementById('mps-status-val');
+            if (elMps && data.mps_model && data.mps_model.metrics) {
+                elMps.textContent = `Active (PR-AUC ${data.mps_model.metrics.pr_auc}, ROC-AUC ${data.mps_model.metrics.roc_auc})`;
+            }
+
+            const elXgb = document.getElementById('xgb-status-val');
+            if (elXgb && data.firms_model && data.firms_model.metrics) {
+                elXgb.textContent = `Trained (PR-AUC ${data.firms_model.metrics.pr_auc}, ROC-AUC ${data.firms_model.metrics.roc_auc})`;
+            }
+        } catch (e) {
+            console.warn('Failed loading FIRMS metrics:', e);
+        }
+    }
+
+    async retrainModel(engine, btnEl) {
+        const feedback = document.getElementById('firms-train-feedback');
+        const origText = btnEl.textContent;
+        btnEl.disabled = true;
+        btnEl.textContent = '⏳ Training...';
+        if (feedback) feedback.textContent = `Training ${engine} on real NASA FIRMS observations...`;
+
+        try {
+            const res = await fetch(`/api/ml/train-firms?target_engine=${engine}&max_samples_per_sensor=3000`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+            if (data.report && data.report.metrics) {
+                const m = data.report.metrics;
+                if (feedback) feedback.textContent = `✅ Completed in ${data.duration_sec}s! PR-AUC: ${m.pr_auc} | ROC-AUC: ${m.roc_auc}`;
+            }
+            await this.loadFirmsMetrics();
+        } catch (err) {
+            if (feedback) feedback.textContent = `❌ Training error: ${err.message}`;
+        } finally {
+            btnEl.disabled = false;
+            btnEl.textContent = origText;
+        }
+    }
+
+    async syncFirmsLive(btnEl) {
+        const feedback = document.getElementById('firms-train-feedback');
+        const origText = btnEl.textContent;
+        btnEl.disabled = true;
+        btnEl.textContent = '⏳ Ingesting...';
+        if (feedback) feedback.textContent = 'Downloading live NASA FIRMS telemetry (MODIS & VIIRS)...';
+
+        try {
+            const res = await fetch('/api/firms/sync-live?max_samples_per_sensor=2000', {
+                method: 'POST'
+            });
+            const data = await res.json();
+            if (data.status === 'SUCCESS') {
+                if (feedback) feedback.textContent = `✅ Synced ${data.synced_hotspots.toLocaleString()} real active fire hotspots in ${data.duration_ms}ms!`;
+                // Reload Cesium view
+                if (window.cameraController) {
+                    window.cameraController.scheduleFetch();
+                }
+            }
+        } catch (err) {
+            if (feedback) feedback.textContent = `❌ Sync error: ${err.message}`;
+        } finally {
+            btnEl.disabled = false;
+            btnEl.textContent = origText;
+        }
     }
 }

@@ -268,10 +268,30 @@ async def get_langsmith_traces():
     Returns LangSmith prompt audit traces showing anti-hallucination verification,
     token consumption, and LLM tactical copilot reasoning.
     """
+    status = langsmith_tracer.get_status()
     return {
         "traces": langsmith_tracer.get_recent_traces(),
         "observability_tool": "LangSmith (v0.1)",
+        "project": status.get("project", "EarthPulse3D"),
+        "connected": status.get("connected", False),
+        "status": status,
         "hallucination_guardrail": "Active (100% Grounded)"
+    }
+
+@app.post("/api/telemetry/langsmith/test")
+async def test_langsmith_trace():
+    """
+    Triggers an immediate test trace directly into LangSmith Cloud.
+    """
+    trace = langsmith_tracer.trace_dispatch_explanation(
+        hotspot_id="H3-8826-TEST",
+        rl_action="DISPATCH_AIR_TANKER_2",
+        tactical_order="EarthPulse3D LangSmith live sync verification: Air Tanker #2 staged for ridge containment."
+    )
+    return {
+        "status": "success",
+        "cloud_synced": trace.get("cloud_synced", False),
+        "trace": trace
     }
 
 @app.get("/api/telemetry/stats")
@@ -483,6 +503,33 @@ async def get_visible_hotspots(
     query_latency_ms = (time.time() - t0) * 1000.0
     metrics_manager.record_query(query_latency_ms)
     return result
+
+@app.post("/api/hotspots/clear")
+async def clear_all_hotspots_endpoint():
+    """
+    Clears all active fire hotspots from the in-memory spatial index and active store.
+    """
+    from .data_generator import clear_all_hotspots
+    clear_all_hotspots()
+    spatial_index.load_hotspots([])
+    metrics_manager.update_frp(0.0)
+
+    payload = {
+        "type": "HOTSPOTS_CLEARED",
+        "message": "All fire hotspot data cleared",
+        "catalog_count": 0
+    }
+    for ws in list(active_websockets):
+        try:
+            await ws.send_text(json.dumps(payload))
+        except Exception:
+            pass
+
+    return {
+        "status": "SUCCESS",
+        "message": "All hotspots successfully removed",
+        "total_hotspots_catalog": 0
+    }
 
 GEOCODE_CACHE = {}
 

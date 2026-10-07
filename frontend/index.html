@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarthPulse 3D | Global Satellite Fire & Thermal Telemetry</title>
+    <!-- CesiumJS CSS -->
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- 3D Earth Cesium Container -->
+    <div id="cesiumContainer"></div>
+
+    <!-- Top Telemetry Header -->
+    <header class="top-nav glass-panel">
+        <div class="brand">
+            <span class="pulse-indicator"></span>
+            <div class="brand-title">
+                <h1>EARTHPULSE <span>3D</span></h1>
+                <p>NASA MODIS & VIIRS Real-time Fire Telemetry</p>
+            </div>
+        </div>
+
+        <div class="camera-telemetry">
+            <div class="telem-item">
+                <span class="label">ALTITUDE</span>
+                <span class="value" id="telem-altitude">12,500 km</span>
+            </div>
+            <div class="telem-item">
+                <span class="label">CENTER LAT/LON</span>
+                <span class="value" id="telem-coords">23.81° N, 90.41° E</span>
+            </div>
+            <div class="telem-item">
+                <span class="label">HEADING / PITCH</span>
+                <span class="value" id="telem-orientation">0° / -90°</span>
+            </div>
+        </div>
+
+        <!-- NASA FIRMS View Mode Switcher -->
+        <div class="view-mode-switcher">
+            <button id="view-mode-globe" class="mode-btn active" title="3D Photorealistic Orbital Globe">
+                <span class="btn-icon">🌐</span> 3D Globe
+            </button>
+            <button id="view-mode-firms" class="mode-btn" title="NASA FIRMS 2D Equirectangular GIS Map">
+                <span class="btn-icon">🗺️</span> NASA FIRMS 2D
+            </button>
+            <button id="btn-firms-analytics" class="mode-btn analytics-btn" title="Inspect Broader Earth Environmental Analytics">
+                <span class="btn-icon">📊</span> Earth Impact
+            </button>
+        </div>
+
+        <div class="lod-badge-container">
+            <span class="lod-tag" id="lod-badge">LOD 1 • SPACE VIEW</span>
+        </div>
+    </header>
+
+    <!-- Drawer Reopen Buttons (visible when side panels are collapsed) -->
+    <button id="reopen-left-tab" class="drawer-reopen-tab left-tab hidden" title="Open Statistics Panel">
+        <span>📊 Stats</span> <span>▶</span>
+    </button>
+    <button id="reopen-right-tab" class="drawer-reopen-tab right-tab hidden" title="Open Navigation & Filters">
+        <span>◀</span> <span>🌍 Nav & Filters</span>
+    </button>
+
+    <!-- Left Floating HUD: Dynamic Viewport Statistics -->
+    <aside id="left-panel" class="left-panel glass-panel">
+        <button id="btn-toggle-left-panel" class="panel-toggle-btn left-toggle" title="Collapse Statistics (Zen Mode)">◀</button>
+        <div class="panel-header">
+            <div class="region-info">
+                <span class="sub-label">ACTIVE VIEWPORT REGION</span>
+                <h2 id="active-region-name">Global Earth View</h2>
+            </div>
+            <div class="loading-spinner" id="query-spinner"></div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-label">TOTAL HOTSPOTS IN VIEW</div>
+                <div class="stat-value" id="stat-total">12,833</div>
+                <div class="stat-bar-wrapper">
+                    <div class="stat-bar-modis" id="bar-modis" style="width: 40%;"></div>
+                    <div class="stat-bar-viirs" id="bar-viirs" style="width: 60%;"></div>
+                </div>
+                <div class="stat-subtext">
+                    <span class="modis-legend">MODIS: <strong id="stat-modis">5,142</strong></span>
+                    <span class="viirs-legend">VIIRS: <strong id="stat-viirs">7,691</strong></span>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card small">
+                    <div class="stat-label">AVG FRP (POWER)</div>
+                    <div class="stat-value highlight" id="stat-avg-frp">41.8 <span class="unit">MW</span></div>
+                    <div class="stat-footer">Peak: <span id="stat-max-frp">95.0 MW</span></div>
+                </div>
+                <div class="stat-card small">
+                    <div class="stat-label">HIGH RISK ZONES</div>
+                    <div class="stat-value warning" id="stat-high-risk">1,240</div>
+                    <div class="stat-footer">High Conf: <span id="stat-high-conf">8,920</span></div>
+                </div>
+            </div>
+
+            <!-- Viewport Environmental Impact -->
+            <div class="stat-row">
+                <div class="stat-card small">
+                    <div class="stat-label">BURNED AREA (EST)</div>
+                    <div class="stat-value" id="stat-burned-area">1,240 <span class="unit">km²</span></div>
+                    <div class="stat-footer">Carbon: <span id="stat-carbon-co2">18.8 Mt</span></div>
+                </div>
+                <div class="stat-card small">
+                    <div class="stat-label">RADIATIVE ENERGY</div>
+                    <div class="stat-value highlight" id="stat-energy">42.5 <span class="unit">GW</span></div>
+                    <div class="stat-footer">Diurnal: <span id="stat-diurnal-label">50% Day</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic LOD Explanation Box -->
+        <div class="lod-explainer-card">
+            <div class="lod-header">
+                <span class="lod-icon">📡</span>
+                <span class="lod-title" id="lod-title">Space View (Global Aggregates)</span>
+            </div>
+            <p id="lod-desc">Displaying macro density clusters to minimize render load. Zoom into continents or countries for finer localized detections.</p>
+        </div>
+
+        <!-- Camera Control Guide -->
+        <div class="camera-controls-guide">
+            <div class="guide-title">🎮 CAMERA CONTROLS</div>
+            <ul>
+                <li><span>Left Drag:</span> Rotate Earth / Pan view</li>
+                <li><span>Right Drag / Scroll:</span> Zoom In & Out</li>
+                <li><span>Middle Drag / Ctrl:</span> Tilt angle & pitch</li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Right Floating HUD: Navigation Fly-Tos & Sensor Filters -->
+    <aside id="right-panel" class="right-panel glass-panel">
+        <button id="btn-toggle-right-panel" class="panel-toggle-btn right-toggle" title="Collapse Navigation">▶</button>
+        <div class="panel-section accordion-section expanded" id="sec-navigation">
+            <div class="accordion-header" data-target="sec-navigation">
+                <div class="section-header-row">
+                    <h3>🌍 WHOLE EARTH NAVIGATION</h3>
+                    <span class="header-tag">360° GLOBAL</span>
+                </div>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+
+            <!-- Global Search Bar -->
+            <div class="nav-search-container">
+                <div class="nav-search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="global-search-input" placeholder="Search any country, city, district or landmark..." autocomplete="off">
+                    <button id="search-clear-btn" class="search-clear-btn hidden">&times;</button>
+                </div>
+                <div id="search-autocomplete-list" class="search-autocomplete-list hidden"></div>
+            </div>
+
+            <!-- Hierarchical Area Switcher (Every area of Earth) -->
+            <div class="area-switcher-widget">
+                <div class="area-switcher-header">
+                    <span class="switcher-title">🌐 SWITCH TO ANY AREA ON EARTH</span>
+                </div>
+                <div class="switcher-controls">
+                    <div class="select-group">
+                        <label for="continent-select">1. SELECT CONTINENT / SECTOR</label>
+                        <select id="continent-select" class="hud-dropdown">
+                            <option value="all">🌐 All Continents (160+ Countries)</option>
+                            <option value="asia">🌏 Asia & Pacific</option>
+                            <option value="europe">🌍 Europe</option>
+                            <option value="africa">🌍 Africa</option>
+                            <option value="north_america">🌎 North America</option>
+                            <option value="south_america">🌎 South America</option>
+                            <option value="oceania">🌏 Oceania & Australasia</option>
+                            <option value="polar">❄️ Polar & Deep Space</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <label for="country-select">2. SWITCH COUNTRY / REGION</label>
+                        <div class="country-action-row">
+                            <select id="country-select" class="hud-dropdown">
+                                <!-- Populated dynamically from WORLD_ATLAS -->
+                            </select>
+                            <button id="btn-jump-country" class="jump-fly-btn" title="Fly directly to this area">
+                                ✈️ Fly
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Continent Category Tabs -->
+            <div class="continent-tabs" id="continent-tabs">
+                <button class="cont-tab active" data-continent="all">All</button>
+                <button class="cont-tab" data-continent="global">Space</button>
+                <button class="cont-tab" data-continent="asia">Asia</button>
+                <button class="cont-tab" data-continent="europe">Europe</button>
+                <button class="cont-tab" data-continent="africa">Africa</button>
+                <button class="cont-tab" data-continent="americas">Americas</button>
+                <button class="cont-tab" data-continent="oceania">Oceania</button>
+                <button class="cont-tab" data-continent="polar">Polar</button>
+            </div>
+
+            <!-- Expanded Global Fly-To Grid -->
+            <div class="flyto-grid" id="flyto-grid">
+                <!-- Whole Earth Space View -->
+                <button class="fly-btn active" data-target="global" data-continent="global">
+                    <span class="btn-icon">🌎</span> Whole Earth (Space)
+                </button>
+                
+                <!-- Continental Macro Views -->
+                <button class="fly-btn" data-target="asia" data-continent="asia">
+                    <span class="btn-icon">🌏</span> Asia & Pacific
+                </button>
+                <button class="fly-btn" data-target="europe" data-continent="europe">
+                    <span class="btn-icon">🌍</span> Europe
+                </button>
+                <button class="fly-btn" data-target="africa" data-continent="africa">
+                    <span class="btn-icon">🌍</span> Africa
+                </button>
+                <button class="fly-btn" data-target="north_america" data-continent="americas">
+                    <span class="btn-icon">🌎</span> North America
+                </button>
+                <button class="fly-btn" data-target="south_america" data-continent="americas">
+                    <span class="btn-icon">🌎</span> South America
+                </button>
+                <button class="fly-btn" data-target="oceania" data-continent="oceania">
+                    <span class="btn-icon">🌏</span> Oceania
+                </button>
+                <button class="fly-btn" data-target="polar_north" data-continent="polar">
+                    <span class="btn-icon">❄️</span> Arctic
+                </button>
+                <button class="fly-btn" data-target="polar_south" data-continent="polar">
+                    <span class="btn-icon">🧊</span> Antarctica
+                </button>
+
+                <!-- Detailed Hotspot Zones & Countries -->
+                <button class="fly-btn primary-btn" data-target="bangladesh" data-continent="asia">
+                    <span class="btn-icon">🇧🇩</span> Bangladesh
+                </button>
+                <button class="fly-btn sub-btn" data-target="dhaka" data-continent="asia">
+                    <span class="btn-icon">📍</span> Dhaka (City)
+                </button>
+                <button class="fly-btn sub-btn" data-target="chittagong" data-continent="asia">
+                    <span class="btn-icon">⛰️</span> Hill Tracts
+                </button>
+                <button class="fly-btn sub-btn" data-target="sundarbans" data-continent="asia">
+                    <span class="btn-icon">🌲</span> Sundarbans
+                </button>
+                <button class="fly-btn" data-target="india" data-continent="asia">
+                    <span class="btn-icon">🇮🇳</span> India
+                </button>
+                <button class="fly-btn" data-target="china" data-continent="asia">
+                    <span class="btn-icon">🇨🇳</span> China
+                </button>
+                <button class="fly-btn" data-target="japan" data-continent="asia">
+                    <span class="btn-icon">🇯🇵</span> Japan
+                </button>
+                <button class="fly-btn" data-target="indonesia" data-continent="asia">
+                    <span class="btn-icon">🇮🇩</span> Indonesia
+                </button>
+                <button class="fly-btn" data-target="california" data-continent="americas">
+                    <span class="btn-icon">🇺🇸</span> California
+                </button>
+                <button class="fly-btn" data-target="canada" data-continent="americas">
+                    <span class="btn-icon">🇨🇦</span> Canada
+                </button>
+                <button class="fly-btn" data-target="amazon" data-continent="americas">
+                    <span class="btn-icon">🇧🇷</span> Amazon Basin
+                </button>
+                <button class="fly-btn" data-target="pantanal" data-continent="americas">
+                    <span class="btn-icon">🌿</span> Pantanal
+                </button>
+                <button class="fly-btn" data-target="congo" data-continent="africa">
+                    <span class="btn-icon">🇨🇩</span> Congo Basin
+                </button>
+                <button class="fly-btn" data-target="south_africa" data-continent="africa">
+                    <span class="btn-icon">🇿🇦</span> South Africa
+                </button>
+                <button class="fly-btn" data-target="greece" data-continent="europe">
+                    <span class="btn-icon">🇬🇷</span> Greece Arc
+                </button>
+                <button class="fly-btn" data-target="spain" data-continent="europe">
+                    <span class="btn-icon">🇪🇸</span> Spain
+                </button>
+                <button class="fly-btn" data-target="uk" data-continent="europe">
+                    <span class="btn-icon">🇬🇧</span> United Kingdom
+                </button>
+                <button class="fly-btn" data-target="germany" data-continent="europe">
+                    <span class="btn-icon">🇩🇪</span> Germany
+                </button>
+                <button class="fly-btn" data-target="australia" data-continent="oceania">
+                    <span class="btn-icon">🇦🇺</span> Australia
+                </button>
+            </div>
+
+            <!-- Cinematic Tour Button -->
+            <div class="tour-action-row">
+                <button id="cinematic-tour-btn" class="tour-btn">
+                    <span class="btn-icon">🎬</span> Start Global Cinematic Tour
+                </button>
+            </div>
+            </div><!-- /accordion-body -->
+        </div>
+
+        <div class="panel-section accordion-section" id="sec-filters">
+            <div class="accordion-header" data-target="sec-filters">
+                <div class="section-header-row">
+                    <h3>⚙️ SENSOR FILTERS</h3>
+                </div>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <div class="filter-group">
+                    <label>Active Sensors</label>
+                    <div class="sensor-toggle-bar">
+                        <button class="sensor-btn active" data-sensor="ALL">ALL</button>
+                        <button class="sensor-btn" data-sensor="MODIS">MODIS (1km)</button>
+                        <button class="sensor-btn" data-sensor="VIIRS">VIIRS (375m)</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <div class="slider-header">
+                        <label>Min Fire Radiative Power (FRP)</label>
+                        <span class="slider-val" id="frp-val-display">0 MW</span>
+                    </div>
+                    <input type="range" id="frp-slider" min="0" max="80" value="0" step="5">
+                </div>
+
+                <div class="filter-group toggle-row three-d-only">
+                    <label for="auto-rotate-toggle">Auto-Orbit Atmosphere</label>
+                    <input type="checkbox" id="auto-rotate-toggle">
+                </div>
+            </div>
+        </div>
+
+        <!-- NASA FIRMS Layers & Broader Earth Overlays -->
+        <div class="panel-section accordion-section" id="sec-layers">
+            <div class="accordion-header" data-target="sec-layers">
+                <div class="section-header-row">
+                    <h3>🛰️ NASA FIRMS BROADER LAYERS</h3>
+                    <span class="header-tag">EARTH GIS</span>
+                </div>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <div class="filter-group toggle-row">
+                    <label for="toggle-smoke-plumes">💨 Smoke Plumes & Aerosols (AOD)</label>
+                    <input type="checkbox" id="toggle-smoke-plumes">
+                </div>
+
+                <div class="filter-group toggle-row">
+                    <label for="toggle-thermal-heatmap">🔥 Thermal Density Heatmap</label>
+                    <input type="checkbox" id="toggle-thermal-heatmap">
+                </div>
+
+                <div class="filter-group toggle-row">
+                    <label for="toggle-firms-colormode">🎨 NASA Day/Night Color Coding</label>
+                    <input type="checkbox" id="toggle-firms-colormode">
+                </div>
+
+                <div class="filter-group" style="margin-top: 8px;">
+                    <label for="toggle-daynight-pass">Satellite Overpass Filter</label>
+                    <select id="toggle-daynight-pass" class="hud-dropdown">
+                        <option value="ALL">☀️🌙 Day & Night Passes (All)</option>
+                        <option value="D">☀️ Daytime Overpasses Only</option>
+                        <option value="N">🌙 Nighttime Overpasses Only</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Realistic Earth Basemap & Atmosphere Controls -->
+        <div class="panel-section accordion-section" id="sec-basemaps">
+            <div class="accordion-header" data-target="sec-basemaps">
+                <div class="section-header-row">
+                    <h3>🌐 REAL SATELLITE BASEMAP</h3>
+                    <span class="header-tag" style="color: #4285f4; border-color: rgba(66, 133, 244, 0.4); background: rgba(66, 133, 244, 0.12);">GOOGLE EARTH API</span>
+                </div>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <div class="basemap-grid">
+                    <button class="basemap-btn active" data-map="google_earth" title="Authentic Google Earth Ultra-HD True Satellite Imagery">
+                        <span class="btn-icon">🌎</span> Google Earth 4K
+                    </button>
+                    <button class="basemap-btn" data-map="google_hybrid" title="Google Earth Satellite + Global Borders & Labels">
+                        <span class="btn-icon">🏷️</span> Google Hybrid
+                    </button>
+                    <button class="basemap-btn" data-map="satellite" title="Esri World Imagery">
+                        <span class="btn-icon">🛰️</span> Esri Satellite
+                    </button>
+                    <button class="basemap-btn" data-map="bluemarble" title="NASA Blue Marble Shaded Relief">
+                        <span class="btn-icon">🌍</span> Blue Marble
+                    </button>
+                    <button class="basemap-btn" data-map="clouds" title="Real-time NASA Weather Clouds">
+                        <span class="btn-icon">☁️</span> NASA Clouds
+                    </button>
+                    <button class="basemap-btn" data-map="night" title="NASA Night City Lights">
+                        <span class="btn-icon">🌃</span> Night Lights
+                    </button>
+                </div>
+                <div class="filter-group toggle-row three-d-only" style="margin-top: 10px;">
+                    <label for="google-3d-tiles-toggle">🏙️ Google 3D Buildings (3D Tiles)</label>
+                    <input type="checkbox" id="google-3d-tiles-toggle">
+                </div>
+                <div class="filter-group toggle-row three-d-only">
+                    <label for="sun-lighting-toggle">☀️ Day/Night Shadow (Off = Full Earth)</label>
+                    <input type="checkbox" id="sun-lighting-toggle">
+                </div>
+                <div class="filter-group toggle-row three-d-only">
+                    <label for="atmosphere-halo-toggle">✨ NASA Atmospheric Glow</label>
+                    <input type="checkbox" id="atmosphere-halo-toggle" checked>
+                </div>
+            </div>
+        </div>
+
+        <!-- FRP Spectrum Legend -->
+        <div class="panel-section accordion-section legend-section" id="sec-legend">
+            <div class="accordion-header" data-target="sec-legend">
+                <div class="section-header-row">
+                    <h3>🔥 FIRE RADIATIVE POWER (MW)</h3>
+                </div>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <div class="legend-gradient-bar"></div>
+                <div class="legend-labels">
+                    <span>&lt; 15 MW (Low)</span>
+                    <span>40 MW</span>
+                    <span>&gt; 90 MW (Critical)</span>
+                </div>
+                <div class="legend-symbols">
+                    <div class="sym-item"><span class="dot viirs"></span> VIIRS 375m Point</div>
+                    <div class="sym-item"><span class="dot modis"></span> MODIS 1km Point</div>
+                    <div class="sym-item"><span class="dot cluster"></span> Aggregated Cluster</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Hotspot Detail Modal (Click-to-Inspect) -->
+    <div id="hotspot-modal" class="hotspot-modal glass-panel hidden">
+        <button class="modal-close-btn" id="modal-close">&times;</button>
+        <div class="modal-header">
+            <span class="badge-risk" id="modal-risk">CRITICAL RISK</span>
+            <h3 id="modal-title">Hotspot BD-00014</h3>
+            <span class="modal-region" id="modal-region">Dhaka Metropolitan & Industrial Region</span>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-metric-row">
+                <div class="modal-metric">
+                    <span class="lbl">HARMONIZED FRP</span>
+                    <span class="val" id="modal-frp">58.4 MW</span>
+                </div>
+                <div class="modal-metric">
+                    <span class="lbl">ML FIRE PROBABILITY</span>
+                    <span class="val" id="modal-ml-prob">98.2%</span>
+                </div>
+                <div class="modal-metric">
+                    <span class="lbl">CONFIDENCE</span>
+                    <span class="val" id="modal-conf">94%</span>
+                </div>
+            </div>
+
+            <div class="modal-detail-list">
+                <div class="detail-row">
+                    <span class="k">Sensor / Platform:</span>
+                    <span class="v" id="modal-sensor">VIIRS NOAA-20 (375m)</span>
+                </div>
+                <div class="detail-row">
+                    <span class="k">Brightness Temp:</span>
+                    <span class="v" id="modal-brightness">352.4 Kelvin</span>
+                </div>
+                <div class="detail-row">
+                    <span class="k">Coordinates:</span>
+                    <span class="v" id="modal-coords">23.8214° N, 90.4120° E</span>
+                </div>
+                <div class="detail-row">
+                    <span class="k">Acquisition Time:</span>
+                    <span class="v" id="modal-time">2026-10-03 14:15:00 UTC</span>
+                </div>
+                <div class="detail-row">
+                    <span class="k">Land Cover:</span>
+                    <span class="v" id="modal-land">Industrial & Peri-urban Brick Kilns</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="action-btn fly-here-btn" id="modal-zoom-btn">🔍 Focus Camera</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NASA FIRMS / NASA Eyes Dynamic Hover Tooltip -->
+    <div id="hover-tooltip" class="nasa-hover-tooltip glass-panel hidden">
+        <div class="tt-top">
+            <span class="tt-badge" id="tt-badge">VIIRS 375m</span>
+            <span class="tt-id" id="tt-id">BD-00014</span>
+        </div>
+        <div class="tt-title" id="tt-title">Active Fire Telemetry</div>
+        <div class="tt-metrics">
+            <div class="tt-col">
+                <span class="tt-lbl">FRP (POWER)</span>
+                <span class="tt-val highlight" id="tt-frp">45.8 MW</span>
+            </div>
+            <div class="tt-col">
+                <span class="tt-lbl">CONFIDENCE</span>
+                <span class="tt-val" id="tt-conf">94%</span>
+            </div>
+            <div class="tt-col">
+                <span class="tt-lbl">BRIGHTNESS</span>
+                <span class="tt-val" id="tt-temp">348 K</span>
+            </div>
+            <div class="tt-col">
+                <span class="tt-lbl">ML PROB</span>
+                <span class="tt-val" id="tt-ml">98.5%</span>
+            </div>
+        </div>
+        <div class="tt-sub" id="tt-sub">Dhaka Industrial & Brick Kilns</div>
+        <div class="tt-coords-row">
+            <span id="tt-coords">23.8214° N, 90.4120° E</span>
+            <span id="tt-time">14:15 UTC</span>
+        </div>
+        <div class="tt-action-hint">👆 Left-Click to inspect & focus</div>
+    </div>
+    <!-- MediaPipe Hand Tracking HUD (DNA Project Engine) -->
+    <div id="webcam-hud" class="webcam-hud glass-panel hidden">
+        <div class="webcam-header">
+            <span class="pulse-indicator"></span>
+            <span class="webcam-title">🖐️ HAND AI RADAR (DNA ENGINE)</span>
+        </div>
+        <div class="webcam-video-container">
+            <video id="webcam-video" autoplay playsinline muted></video>
+            <canvas id="webcam-canvas" class="webcam-overlay-canvas"></canvas>
+        </div>
+        <div id="hand-gesture-badge" class="gesture-badge waiting">WAITING FOR HAND</div>
+        <div class="webcam-status" id="webcam-status-text">Show hand: 🖐️ Pan | 🤏 Zoom | ✊ Lock</div>
+    </div>
+
+    <!-- Floating On-Screen Camera D-Pad & Flight Tour -->
+    <div id="camera-dpad-widget" class="camera-dpad-widget glass-panel minimized">
+        <div class="dpad-header" id="dpad-toggle-btn" title="Toggle Camera Controls">
+            <span class="dpad-title">🎮 CAMERA CONTROLS</span>
+            <button class="dpad-min-btn" id="dpad-min-icon">▲</button>
+        </div>
+        
+        <div class="dpad-body" id="dpad-body">
+            <!-- DNA Hand Tracking Motion Control Button -->
+            <button id="btn-toggle-webcam" class="webcam-main-btn">
+                <span class="btn-icon">🖐️</span> Hand Tracking (DNA Mode)
+            </button>
+
+            <div class="dpad-grid">
+                <div></div>
+                <button class="dpad-btn" id="dpad-up" title="Pan Up (W / ↑)">▲</button>
+                <div></div>
+                <button class="dpad-btn" id="dpad-left" title="Rotate Left (A / ←)">◀</button>
+                <button class="dpad-btn center-btn" id="dpad-center" title="Reset View">🌍</button>
+                <button class="dpad-btn" id="dpad-right" title="Rotate Right (D / →)">▶</button>
+                <div></div>
+                <button class="dpad-btn" id="dpad-down" title="Pan Down (S / ↓)">▼</button>
+                <div></div>
+            </div>
+
+            <div class="zoom-btn-row">
+                <button class="zoom-btn" id="dpad-zoom-in" title="Zoom In (Q / +)">➕ Zoom In</button>
+                <button class="zoom-btn" id="dpad-zoom-out" title="Zoom Out (E / -)">➖ Zoom Out</button>
+            </div>
+
+            <button class="tour-btn" id="btn-start-tour" title="Auto Flight Tour across Key Fire Zones">
+                🚀 Guided Flight Tour
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Bottom NASA FIRMS Timeline Bar -->
+    <div id="firms-timeline-bar" class="firms-timeline-bar glass-panel">
+        <div class="timeline-controls-left">
+            <button id="timeline-play-btn" class="timeline-play-btn" title="Play 7-Day Time-lapse Animation">
+                ▶ Play
+            </button>
+            <div class="time-range-group">
+                <button class="tr-btn active" data-range="24h">24h</button>
+                <button class="tr-btn" data-range="48h">48h</button>
+                <button class="tr-btn" data-range="7d">7 Days</button>
+            </div>
+        </div>
+        <div class="timeline-slider-container">
+            <div class="timeline-meta-row">
+                <span class="timeline-label" id="timeline-date-label">PAST 24 HOURS (OCT 03, 2026)</span>
+                <span class="timeline-tag">NASA SATELLITE ARCHIVE</span>
+            </div>
+            <input type="range" id="timeline-slider" min="0" max="6" value="6" step="1" class="timeline-slider">
+            <div class="timeline-ticks">
+                <span>-6d</span>
+                <span>-5d</span>
+                <span>-4d</span>
+                <span>-3d</span>
+                <span>-2d</span>
+                <span>-1d</span>
+                <span class="tick-today">Today</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- NASA FIRMS Broader Earth Impact Drawer -->
+    <div id="firms-analytics-drawer" class="firms-analytics-drawer glass-panel">
+        <div class="drawer-header">
+            <div class="dh-left">
+                <span class="pulse-indicator orange"></span>
+                <div class="dh-title-wrap">
+                    <h3>GLOBAL EARTH IMPACT & NASA FIRMS ANALYTICS</h3>
+                    <p>Broader Biospheric, Carbon & Atmospheric Thermal Assessment</p>
+                </div>
+            </div>
+            <button id="analytics-drawer-close" class="drawer-close-btn">&times;</button>
+        </div>
+
+        <div class="drawer-content">
+            <!-- Key Environmental Impact Cards -->
+            <div class="analytics-metrics-grid">
+                <div class="impact-card">
+                    <span class="ic-label">ESTIMATED BURNED AREA</span>
+                    <div class="ic-val"><span id="firms-burned-area">47,556</span> <span class="ic-unit">km²</span></div>
+                    <span class="ic-sub"><span id="firms-burned-hectares">4,755,620</span> hectares</span>
+                </div>
+                <div class="impact-card">
+                    <span class="ic-label">ESTIMATED CARBON (CO₂) RELEASED</span>
+                    <div class="ic-val"><span id="firms-carbon-co2">722.8</span> <span class="ic-unit">Mt</span></div>
+                    <span class="ic-sub">CH₄ Methane: <strong id="firms-methane-ch4">3,252.8 kt</strong></span>
+                </div>
+                <div class="impact-card">
+                    <span class="ic-label">TOTAL RADIATIVE ENERGY (FRP)</span>
+                    <div class="ic-val"><span id="firms-total-energy">579.9 GW</span></div>
+                    <span class="ic-sub">Instantaneous Thermal Release</span>
+                </div>
+                <div class="impact-card">
+                    <span class="ic-label">ACTIVE SATELLITE DETECTIONS</span>
+                    <div class="ic-val highlight"><span id="firms-total-hotspots">15,933</span></div>
+                    <span class="ic-sub">Harmonized MODIS & VIIRS</span>
+                </div>
+            </div>
+
+            <!-- Diurnal Solar Cycle Progress -->
+            <div class="drawer-section">
+                <div class="dsec-title">☀️ DIURNAL OVERPASS CYCLE (DAY vs NIGHT)</div>
+                <div class="diurnal-bar-container">
+                    <div class="diurnal-bar-day" id="diurnal-bar-day" style="width: 50.2%;"></div>
+                </div>
+                <div class="diurnal-labels">
+                    <span>☀️ Daytime Passes: <strong id="diurnal-day-pct">50.2%</strong></span>
+                    <span>🌙 Nighttime Passes: <strong id="diurnal-night-pct">49.8%</strong></span>
+                </div>
+            </div>
+
+            <!-- 7-Day Trend Chart -->
+            <div class="drawer-section">
+                <div class="dsec-title">📈 7-DAY GLOBAL WILDFIRE TREND (T-6 to TODAY)</div>
+                <div class="seven-day-trend-bars" id="seven-day-trend-bars"></div>
+            </div>
+
+            <!-- Country Leaderboard -->
+            <div class="drawer-section">
+                <div class="dsec-title">🏆 TOP WILDFIRE COUNTRIES (LEADERBOARD)</div>
+                <div class="country-leaderboard-list" id="country-leaderboard-list"></div>
+            </div>
+
+            <!-- Top Biomes -->
+            <div class="drawer-section">
+                <div class="dsec-title">🌲 PRIMARY GLOBAL FIRE BIOMES</div>
+                <div class="biome-breakdown-list" id="biome-breakdown-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CesiumJS Script -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <!-- Application Scripts -->
+    <script src="/static/js/world_atlas.js"></script>
+    <script src="/static/js/data_service.js"></script>
+    <script src="/static/js/camera_controller.js"></script>
+    <script type="module" src="/static/js/hand_tracking.js"></script>
+    <script src="/static/js/ui_controller.js"></script>
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

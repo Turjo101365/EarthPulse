@@ -1802,7 +1802,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .nasa-hover-tooltip.hidden { display: none !important; }
 
 /* Responsive adjustments */
-@media (max-width: 1024px) {
+@media (max-width: 1140px) {
     .camera-telemetry { display: none; }
     .firms-timeline-bar { width: 90%; }
 }
@@ -1812,6 +1812,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
    ========================================================================= */
 
 /* Header Action Buttons */
+.header-nav-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.16);
+    margin: 0 4px;
+    align-self: center;
+}
+
 .arch-btn, .crisis-scenario-btn, .langsmith-btn, .grafana-link-btn {
     display: inline-flex;
     align-items: center;
@@ -1822,6 +1830,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border-radius: var(--radius-sm);
     text-decoration: none;
     transition: all 0.2s ease;
+    cursor: pointer;
+}
+.arch-btn .btn-svg, .crisis-scenario-btn .btn-svg, .langsmith-btn .btn-svg, .grafana-link-btn .btn-svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
 }
 .arch-btn {
     background: rgba(74, 59, 198, 0.2);
@@ -1829,6 +1843,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: #c9c2ff;
 }
 .arch-btn:hover { background: rgba(74, 59, 198, 0.4); color: #ffffff; }
+.arch-btn.active {
+    background: rgba(124, 58, 237, 0.55);
+    border-color: #8b5cf6;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.45);
+}
 
 .crisis-scenario-btn {
     background: rgba(194, 65, 12, 0.25);
@@ -1847,6 +1867,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: #a7f3d0;
 }
 .langsmith-btn:hover { background: #059669; color: #ffffff; }
+.langsmith-btn.active {
+    background: rgba(16, 185, 129, 0.4);
+    border-color: #10b981;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+}
 
 .grafana-link-btn {
     background: rgba(249, 115, 22, 0.15);
@@ -1854,6 +1880,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: #fdba74;
 }
 .grafana-link-btn:hover { background: #f97316; color: #ffffff; }
+.grafana-link-btn.active {
+    background: rgba(249, 115, 22, 0.45);
+    border-color: #f97316;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(249, 115, 22, 0.4);
+}
 
 /* Real-time Telemetry Strip in HUD */
 .telemetry-strip {
@@ -1870,6 +1902,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border-radius: 6px;
     padding: 6px 8px;
     text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.telem-pill:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(30, 41, 59, 0.9);
 }
 .telem-pill .lbl {
     font-size: 0.62rem;
@@ -1889,6 +1928,24 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .telem-pill.rl .val { color: #10b981; }
 .telem-pill.blue .val { color: #38bdf8; }
 
+/* Modal Backdrop Overlay */
+.fireguard-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(3, 7, 18, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1005;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+.fireguard-modal-backdrop.hidden {
+    display: none !important;
+}
+
 /* Interactive Architecture & Intel Modal */
 .fireguard-arch-modal {
     position: fixed;
@@ -1901,7 +1958,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border: 1.5px solid var(--border-medium);
     border-radius: var(--radius-lg);
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
-    z-index: 1000;
+    z-index: 1010;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -2072,7 +2129,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border: 1px solid #10b981;
     border-radius: var(--radius-md);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
-    z-index: 90;
+    z-index: 1001;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -2900,5 +2957,83 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     justify-content: flex-end;
+}
+
+/* =========================================================================
+   Fullscreen Subsystem Single Page Application (SPA) Views
+   ========================================================================= */
+.fullscreen-subsystem-page {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #060911;
+    z-index: 500;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px 32px 60px;
+    display: none;
+    color: #f1f5f9;
+}
+.fullscreen-subsystem-page.active {
+    display: block;
+    animation: fadeInView 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fadeInView {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.subsystem-page-wrapper {
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.subsystem-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.sph-title h2 {
+    margin: 0;
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+.sph-title p {
+    margin: 6px 0 0;
+    color: #94a3b8;
+    font-size: 0.88rem;
+}
+
+.btn-back-to-globe {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.btn-back-to-globe:hover {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #38bdf8;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+    transform: translateY(-1px);
 }
 

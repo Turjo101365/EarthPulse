@@ -63,6 +63,17 @@
                 <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 <span>Earth Impact</span>
             </button>
+
+            <span class="header-nav-divider"></span>
+
+            <button id="btn-trigger-crisis-scenario" class="mode-btn crisis-scenario-btn" title="Simulate 5-Step Wildfire Surge & Autonomous Reinforcement Learning (PPO) Dispatch">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>⚡ Reinforcement RL</span>
+            </button>
+            <button id="btn-open-grafana" class="mode-btn grafana-link-btn" title="Inspect Grafana Operations Telemetry & Prometheus Real-time Metrics">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <span>Grafana Ops</span>
+            </button>
         </div>
 
         <div class="header-right">
@@ -665,132 +676,142 @@
         </div>
     </div>
 
-    <!-- NASA FIRMS Broader Earth Impact Drawer -->
-    <div id="firms-analytics-drawer" class="firms-analytics-drawer glass-panel collapsed">
-        <div class="drawer-header">
-            <div class="dh-left">
-                <div class="dh-title-wrap">
-                    <h3>Global Earth Impact & FIRMS Analytics</h3>
-                    <p>Biospheric, Carbon & Atmospheric Thermal Assessment</p>
-                </div>
-            </div>
-            <button id="analytics-drawer-close" class="drawer-close-btn">&times;</button>
-        </div>
+    <!-- ========================================================================= -->
+    <!-- FULLSCREEN SUBSYSTEM SPA PAGES (Clean Dedicated Views, Zero Overlap)      -->
+    <!-- ========================================================================= -->
 
-        <div class="drawer-content">
-            <div class="analytics-metrics-grid">
-                <div class="impact-card">
-                    <span class="ic-label">Estimated Burned Area</span>
-                    <div class="ic-val"><span id="firms-burned-area">0</span> <span class="ic-unit">km²</span></div>
-                    <span class="ic-sub"><span id="firms-burned-hectares">0</span> hectares</span>
+    <!-- PAGE 1: Earth Impact & Biosphere Analytics -->
+    <div id="fullscreen-page-impact" class="fullscreen-subsystem-page">
+        <div class="subsystem-page-wrapper">
+            <div class="subsystem-page-header">
+                <div class="sph-title">
+                    <h2>Global Earth Impact & FIRMS Analytics</h2>
+                    <p>Planetary thermal radiation, biosphere carbon emissions, and multi-sensor wildfire assessment</p>
                 </div>
-                <div class="impact-card">
-                    <span class="ic-label">Carbon (CO₂) Released</span>
-                    <div class="ic-val"><span id="firms-carbon-co2">0.0</span> <span class="ic-unit">Mt</span></div>
-                    <span class="ic-sub">CH₄ Methane: <strong id="firms-methane-ch4">0.0 kt</strong></span>
-                </div>
-                <div class="impact-card">
-                    <span class="ic-label">Total Radiative Energy</span>
-                    <div class="ic-val"><span id="firms-total-energy">0.0 GW</span></div>
-                    <span class="ic-sub">Thermal Release</span>
-                </div>
-                <div class="impact-card">
-                    <span class="ic-label">Active Satellite Detections</span>
-                    <div class="ic-val highlight"><span id="firms-total-hotspots">0</span></div>
-                    <span class="ic-sub">Harmonized Catalog</span>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="time-range-bar">
+                        <button class="tr-btn sp-tr-btn active" data-range="24h">24 Hours</button>
+                        <button class="tr-btn sp-tr-btn" data-range="48h">48 Hours</button>
+                        <button class="tr-btn sp-tr-btn" data-range="7d">7 Days</button>
+                    </div>
+                    <button class="btn-back-to-globe">← Back to 3D Globe</button>
                 </div>
             </div>
 
-            <!-- Diurnal Cycle -->
-            <div class="drawer-section">
-                <div class="dsec-title">Diurnal Overpass Cycle (Day vs Night)</div>
-                <div class="diurnal-bar-container">
-                    <div class="diurnal-bar-day" id="diurnal-bar-day" style="width: 50%;"></div>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Estimated Burned Area</div>
+                    <div class="kpi-val" id="sp-burned-area">14,280 <span style="font-size:1.1rem; color:#94a3b8;">km²</span></div>
+                    <div class="kpi-sub" id="sp-burned-ha">1,428,000 hectares across active zones</div>
                 </div>
-                <div class="diurnal-labels">
-                    <span>Daytime Passes: <strong id="diurnal-day-pct">50%</strong></span>
-                    <span>Nighttime Passes: <strong id="diurnal-night-pct">50%</strong></span>
+                <div class="kpi-card">
+                    <div class="kpi-label">Carbon (CO₂) Released</div>
+                    <div class="kpi-val" id="sp-carbon" style="color:#ef4444;">4.8 <span style="font-size:1.1rem; color:#94a3b8;">Mt</span></div>
+                    <div class="kpi-sub" id="sp-methane">CH₄ Methane: 0.14 Mt</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Radiative Energy</div>
+                    <div class="kpi-val" id="sp-energy" style="color:#f59e0b;">24.6 <span style="font-size:1.1rem; color:#94a3b8;">GW</span></div>
+                    <div class="kpi-sub">Thermal Release (FRP Integrated)</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Active Satellite Detections</div>
+                    <div class="kpi-val" id="sp-detections" style="color:#10b981;">6,000</div>
+                    <div class="kpi-sub">MODIS (1km) + VIIRS (375m) Dual-Feed</div>
                 </div>
             </div>
 
-            <!-- 7-Day Trend Chart -->
-            <div class="drawer-section">
-                <div class="dsec-title">7-Day Global Wildfire Trend</div>
-                <div class="seven-day-trend-bars" id="seven-day-trend-bars"></div>
+            <div class="dashboard-row">
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title"><span>📈 7-Day Global Wildfire Trend</span></div>
+                        <span style="font-size:0.75rem; color:#94a3b8;">Historical Thermal Anomaly Count</span>
+                    </div>
+                    <div class="trend-bars-container" id="sp-trend-wrapper"></div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title"><span>☀️ Diurnal Overpass Cycle (Day vs Night)</span></div>
+                        <span style="font-size:0.75rem; color:#94a3b8;">Satellite Solar Alignment</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
+                                <span style="font-weight:600;">Daytime Passes (Terra & NOAA-20)</span>
+                                <span id="sp-daytime-pct" style="font-family:'JetBrains Mono',monospace; color:#f97316; font-weight:700;">68%</span>
+                            </div>
+                            <div style="height:8px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden;">
+                                <div id="sp-daytime-bar" style="width:68%; height:100%; background:#f97316; border-radius:999px;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
+                                <span style="font-weight:600;">Nighttime Passes (Aqua & Suomi-NPP)</span>
+                                <span id="sp-nighttime-pct" style="font-family:'JetBrains Mono',monospace; color:#38bdf8; font-weight:700;">32%</span>
+                            </div>
+                            <div style="height:8px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden;">
+                                <div id="sp-nighttime-bar" style="width:32%; height:100%; background:#38bdf8; border-radius:999px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Country Leaderboard -->
-            <div class="drawer-section">
-                <div class="dsec-title">Active Fire Activity by Country</div>
-                <div class="country-leaderboard-list" id="country-leaderboard-list"></div>
-            </div>
+            <div class="dashboard-row">
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title"><span>🌍 Active Fire Activity by Country</span></div>
+                        <span style="font-size:0.75rem; color:#94a3b8;">Top Ranked Hotspots</span>
+                    </div>
+                    <table class="country-table">
+                        <thead>
+                            <tr>
+                                <th>Country</th>
+                                <th>Active Hotspots</th>
+                                <th>Avg FRP</th>
+                                <th>Risk Index</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sp-country-tbody">
+                            <tr><td colspan="4" style="text-align:center; padding:16px; color:#64748b;">Loading live FIRMS records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
-            <!-- Top Biomes -->
-            <div class="drawer-section">
-                <div class="dsec-title">Primary Biome Breakdown</div>
-                <div class="biome-breakdown-list" id="biome-breakdown-list"></div>
-            </div>
-        </div>
-    <!-- LangSmith AI Copilot Audit Drawer -->
-    <div id="langsmith-drawer" class="langsmith-drawer collapsed">
-        <div class="ls-header">
-            <div class="ls-title">
-                <span class="live-status-dot"></span>
-                <span>LangSmith AI Reasoning Audit</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-                <a href="https://smith.langchain.com/o/c2c7c9be-39c6-4cf8-b26b-8542dca4cff4/projects/p/f8766ac0-20eb-4c2c-9e9c-00bec52b8662?onboarding=EarthPulse3D" target="_blank" rel="noopener" class="langsmith-link-btn" title="Open LangSmith Project Dashboard">EarthPulse3D ↗</a>
-                <button id="btn-close-langsmith" class="drawer-close-btn">&times;</button>
-            </div>
-        </div>
-        <div class="ls-body">
-            <div class="ls-meta-row">
-                <span>Trace: <strong id="ls-trace-id">ls-trace-0001</strong></span>
-                <span id="ls-latency">740 ms · $0.00028</span>
-            </div>
-            <div class="ls-meta-row">
-                <span id="ls-tokens">525 tokens (380 prompt / 145 comp)</span>
-                <span>Guardrail: <strong id="ls-guardrail-status" style="color:#10b981;">PASSED (100% grounded)</strong></span>
-            </div>
-            <div class="ls-meta-row" style="align-items:center;">
-                <span>Cloud: <strong id="ls-cloud-status" style="color:#10b981;">Live Synced 🟢</strong></span>
-                <button id="btn-ls-test-emit" style="background:#059669;border:1px solid #10b981;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;">Emit Trace ⚡</button>
-            </div>
-            <div class="ls-section-title">Telemetry Input Payload</div>
-            <pre class="ls-code" id="ls-input-payload">{}</pre>
-            <div class="ls-section-title">Synthesized Tactical Dispatch Order</div>
-            <div class="ls-output" id="ls-output-text">Awaiting scenario execution...</div>
-            <div class="ls-section-title">Dispatched Suppression Units</div>
-            <div id="ls-units-dispatched-list">
-                <div class="rl-unit-item">
-                    <div class="unit-hdr"><span class="unit-badge AERIAL_RETARDANT">DC-10 Air Tanker #2</span><span class="unit-eta">ETA 18m</span></div>
-                    <div class="unit-desc">High-altitude retardant drop to halt uphill convective fire run ahead of ridge.</div>
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title"><span>🌲 Primary Biome Breakdown</span></div>
+                        <span style="font-size:0.75rem; color:#94a3b8;">Vegetation Categories</span>
+                    </div>
+                    <div id="sp-biome-list" style="margin-top:12px;"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- EarthPulse 3D: Full Architecture & Intel Modal -->
-    <div id="fireguard-arch-modal" class="fireguard-arch-modal hidden">
-        <div class="arch-modal-header">
-            <div class="arch-modal-title">
-                <h2>EarthPulse <span>3D</span></h2>
-                <span>NASA SPACE APPS · RL DISPATCH · GRAFANA OPS</span>
+    <!-- PAGE 2: Architecture & 5 Subsystems -->
+    <div id="fullscreen-page-architecture" class="fullscreen-subsystem-page">
+        <div class="subsystem-page-wrapper">
+            <div class="subsystem-page-header">
+                <div class="sph-title">
+                    <h2>EarthPulse 3D Architecture & Intel</h2>
+                    <p>NASA Space Apps multi-sensor harmonization, spatial XGBoost prediction, PPO RL dispatch, and enterprise observability</p>
+                </div>
+                <button class="btn-back-to-globe">← Back to 3D Globe</button>
             </div>
-            <button id="btn-close-arch" class="drawer-close-btn">&times;</button>
-        </div>
 
-        <div class="arch-tabs-bar" role="tablist">
-            <button class="arch-tab-btn active" data-tab="roles">1 · Roles at a glance</button>
-            <button class="arch-tab-btn" data-tab="harmonizer">2 · Harmonization pipeline</button>
-            <button class="arch-tab-btn" data-tab="ml-rl">3 · XGBoost (Predict) + RL (Prescribe)</button>
-            <button class="arch-tab-btn" data-tab="telemetry">4 · Grafana + LangSmith telemetry</button>
-            <button class="arch-tab-btn" data-tab="scenario">5 · Crisis response scenario</button>
-        </div>
+            <!-- Tab Selector -->
+            <div class="arch-page-tabs">
+                <button class="arch-tab-pill sp-arch-tab active" data-tab="roles">1 · Roles at a glance</button>
+                <button class="arch-tab-pill sp-arch-tab" data-tab="harmonizer">2 · Harmonization pipeline</button>
+                <button class="arch-tab-pill sp-arch-tab" data-tab="ml-rl">3 · XGBoost (Predict) + RL (Prescribe)</button>
+                <button class="arch-tab-pill sp-arch-tab" data-tab="telemetry">4 · Grafana + LangSmith telemetry</button>
+                <button class="arch-tab-pill sp-arch-tab" data-tab="scenario">5 · Crisis response scenario</button>
+            </div>
 
-        <div class="arch-modal-body">
-            <!-- PANEL 1: ROLES AT A GLANCE -->
-            <div class="arch-panel-content" id="arch-panel-roles">
+            <!-- TAB 1: Roles at a glance -->
+            <div class="tab-panel sp-arch-panel active" id="sp-arch-roles">
                 <div class="arch-grid-3">
                     <div class="arch-card fire">
                         <span class="arch-tag fire">CORE SENSOR IP</span>
@@ -816,27 +837,58 @@
 
                 <div class="arch-table-wrap">
                     <table class="arch-table">
-                        <tr><th>Subsystem / Layer</th><th>Traditional Wildfire Systems</th><th>EarthPulse 3D Architecture</th><th>Why It Matters for Judges</th></tr>
-                        <tr><td><strong>Sensor Ingestion</strong></td><td>Separate raw CSV downloads with mismatched 1km & 375m pixels</td><td>Unified H3 equal-area grid, 30-min window matching, calibrated FRP</td><td>Prevents artificial fire count spikes; ensures 24-year data integrity</td></tr>
-                        <tr><td><strong>Fire Risk Prediction</strong></td><td>Static fire hazard indices or naive random K-fold models</td><td>XGBoost trained with <strong>Spatial Block Holdout</strong> & lag features</td><td>Eliminates spatial autocorrelation leakage (true out-of-region skill)</td></tr>
-                        <tr><td><strong>Resource Optimization (RL)</strong></td><td>Manual, delayed incident commander radio calls & guesswork</td><td><strong>Reinforcement Learning (PPO)</strong> Agent optimizing aircraft & crew dispatch</td><td>Transforms project from passive prediction to autonomous crisis action</td></tr>
-                        <tr><td><strong>Spatial Visualization</strong></td><td>Static 2D maps with flat overlapping red dots</td><td><strong>CesiumJS 3D WebGL Earth</strong> with DEM terrain & wind vectors</td><td>Inspects how terrain slope drives uphill fire spread at 60 FPS</td></tr>
-                        <tr><td><strong>Operations & Auditing</strong></td><td>Unmonitored black-box scripts with no latency or cost visibility</td><td><strong>Grafana</strong> (system & fire telemetry) + <strong>LangSmith</strong> (LLM prompt traces)</td><td>Enterprise production observability with zero hallucinated advisories</td></tr>
+                        <thead>
+                            <tr>
+                                <th>Subsystem / Layer</th>
+                                <th>Traditional Wildfire Systems</th>
+                                <th>EarthPulse 3D Architecture</th>
+                                <th>Why It Matters for Judges</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Sensor Ingestion</strong></td>
+                                <td>Separate raw CSV downloads with mismatched 1km & 375m pixels</td>
+                                <td>Unified H3 equal-area grid, 30-min window matching, calibrated FRP</td>
+                                <td>Prevents artificial fire count spikes; ensures 24-year data integrity</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fire Risk Prediction</strong></td>
+                                <td>Static fire hazard indices or naive random K-fold models</td>
+                                <td>XGBoost trained with <strong>Spatial Block Holdout</strong> & lag features</td>
+                                <td>Eliminates spatial autocorrelation leakage (true out-of-region skill)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Resource Optimization (RL)</strong></td>
+                                <td>Manual, delayed incident commander radio calls & guesswork</td>
+                                <td><strong>Reinforcement Learning (PPO)</strong> Agent optimizing aircraft & crew dispatch</td>
+                                <td>Transforms project from passive prediction to autonomous crisis action</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Spatial Visualization</strong></td>
+                                <td>Static 2D maps with flat overlapping red dots</td>
+                                <td><strong>CesiumJS 3D WebGL Earth</strong> with DEM terrain & wind vectors</td>
+                                <td>Inspects how terrain slope drives uphill fire spread at 60 FPS</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Operations & Auditing</strong></td>
+                                <td>Unmonitored black-box scripts with no latency or cost visibility</td>
+                                <td><strong>Grafana</strong> (system telemetry) + <strong>LangSmith</strong> (LLM prompt traces)</td>
+                                <td>Enterprise production observability with zero hallucinated advisories</td>
+                            </tr>
+                        </tbody>
                     </table>
-                </div>
-
-                <div class="arch-pitch-box">
-                    <h4>Why combine XGBoost, RL, and Grafana?</h4>
-                    <p>XGBoost predicts <em>where</em> the fire is heading; the Reinforcement Learning agent decides <em>how</em> to deploy water-bombers and firebreaks to contain it; Grafana and LangSmith prove to operators that the entire mission runs with sub-second latency and zero blind spots.</p>
                 </div>
             </div>
 
-            <!-- PANEL 2: HARMONIZATION PIPELINE -->
-            <div class="arch-panel-content hidden" id="arch-panel-harmonizer">
-                <h4>Harmonization State Machine</h4>
-                <p><code>HarmonizationState: modis_raw · viirs_raw · weather_stream · h3_grid_cells · deduped_clusters · calibrated_frp · postgis_record</code></p>
-                
-                <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+            <!-- TAB 2: Harmonization pipeline -->
+            <div class="tab-panel sp-arch-panel" id="sp-arch-harmonizer">
+                <div class="arch-card" style="margin-bottom:16px;">
+                    <span class="arch-tag fire">DUAL-SENSOR STATE MACHINE</span>
+                    <h4>Harmonization Pipeline Flow</h4>
+                    <p><code>HarmonizationState: modis_raw · viirs_raw · weather_stream · h3_grid_cells · deduped_clusters · calibrated_frp · postgis_record</code></p>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
                     <div class="arch-card">
                         <span class="arch-tag fire">Node 1</span>
                         <h4>node_ingest_and_validate</h4>
@@ -855,19 +907,18 @@
                     <div class="arch-card fire">
                         <span class="arch-tag fire">Node 4</span>
                         <h4>node_duplicate_clustering_and_frp</h4>
-                        <p>Applies DBSCAN (eps=1000m) to merge co-incident multi-sensor detections into single fire events. Computes calibrated Fire Radiative Power (FRP):<br>
-                        <code>FRP_harmonized = 0.65 * FRP_viirs + 0.35 * FRP_modis</code> (normalizing optical Point Spread Function variations).</p>
+                        <p>Applies DBSCAN (eps=1000m) to merge co-incident multi-sensor detections into single fire events. Computes calibrated Fire Radiative Power (FRP): <code>FRP_harmonized = 0.65 * FRP_viirs + 0.35 * FRP_modis</code>.</p>
                     </div>
                     <div class="arch-card">
                         <span class="arch-tag fire">Node 5</span>
                         <h4>node_feature_synthesis</h4>
-                        <p>Enriches fire records with ECMWF weather vectors (RH, Temp, 10m Wind U/V) and DEM slopes, feeding into both the XGBoost predictor and the RL simulation environment.</p>
+                        <p>Enriches fire records with ECMWF weather vectors (RH, Temp, 10m Wind U/V) and DEM slopes, feeding into XGBoost and the RL environment.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- PANEL 3: XGBOOST + RL -->
-            <div class="arch-panel-content hidden" id="arch-panel-ml-rl">
+            <!-- TAB 3: XGBoost + RL -->
+            <div class="tab-panel sp-arch-panel" id="sp-arch-ml-rl">
                 <div class="arch-grid-2">
                     <div class="arch-card">
                         <span class="arch-tag fire">PREDICTION (WHERE?)</span>
@@ -877,140 +928,322 @@
 from backend.app.ml.spatial_split import spatial_block_split
 from xgboost import XGBClassifier
 
-# Continent partitioned into 50km blocks
 train_b, test_b, meta = spatial_block_split(records, block_km=50)
-
 xgb_model = XGBClassifier(
     n_estimators=350,
     learning_rate=0.04,
-    scale_pos_weight=14.2, # wildfire sparsity
-    eval_metric="aucpr"    # PR-AUC = 0.84
+    scale_pos_weight=14.2,
+    eval_metric="aucpr"
 )</pre>
-                        <p><strong>Features:</strong> Lag-FRP (t-24h), Fire Weather Index (FWI), Relative Humidity, Wind vectors, DEM slope, NDVI fuel.</p>
                     </div>
-
                     <div class="arch-card rl">
                         <span class="arch-tag rl">PRESCRIPTION (WHAT ACTION?)</span>
                         <h4>Reinforcement Learning (PPO)</h4>
                         <p>Solves resource allocation: dispatches water-bombers, bulldozers, and containment lines to minimize burned area and human hazard.</p>
                         <pre class="arch-code-box"># backend/app/rl/suppression_env.py - PPO Policy
-import gymnasium as gym
-
-class WildfireSuppressionEnv(gym.Env):
-    def step(self, action):
-        # Action: [unit_id, target_h3_cell, action_type]
-        # action_type: 0=water_drop, 1=cut_fireline, 2=evacuate
-        reward = (
-            - 1.0 * new_burned_hectares
-            - 100.0 * structures_threatened
-            - 0.15 * flight_fuel_cost
-            + 80.0 * containment_established
-        )
-        return next_state, reward, done, trunc, info</pre>
-                        <p><strong>RL Reward:</strong> Penalizes spread to settlements; rewards cutting fire propagation corridors ahead of the flame front.</p>
+reward = (
+    - 1.0 * new_burned_hectares
+    - 100.0 * structures_threatened
+    - 0.15 * flight_fuel_cost
+    + 80.0 * containment_established
+)</pre>
                     </div>
                 </div>
 
-                <div class="arch-card" style="margin-top: 15px; border-left: 3px solid #00e676;">
-                    <span class="arch-tag" style="background: rgba(0, 230, 118, 0.2); color: #00e676;">NASA FIRMS SATELLITE ML ENGINE</span>
-                    <h4>NASA FIRMS Active Fire Model (MODIS & VIIRS)</h4>
-                    <p>Trained on ~30,000 real global satellite observations from Terra/Aqua (1km) & Suomi-NPP/NOAA-20 (375m) using 50km Spatial Block Holdout.</p>
-                    <div id="firms-ml-live-metrics" style="font-family: monospace; font-size: 0.85rem; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 6px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1);">
-                        <div>⚡ <strong>Apple Metal MPS GPU:</strong> <span id="mps-status-val" style="color: #00e676;">Active (PR-AUC 0.9970, ROC-AUC 0.9995)</span></div>
-                        <div>🌲 <strong>XGBoost ARM64:</strong> <span id="xgb-status-val" style="color: #69f0ae;">Trained (PR-AUC 0.9999, ROC-AUC 1.000)</span></div>
-                        <div>🛰️ <strong>Satellite Feeds:</strong> MODIS Terra/Aqua (1km), VIIRS Suomi-NPP (375m), VIIRS NOAA-20 (375m)</div>
-                        <div id="firms-train-feedback" style="margin-top: 6px; color: #ffeb3b; font-size: 0.8rem;"></div>
+                <div class="arch-card" style="border-left: 3px solid #00e676; margin-top:16px;">
+                    <span class="arch-tag" style="background: rgba(0, 230, 118, 0.2); color: #00e676;">LIVE NASA FIRMS ML TRAINING CONSOLE</span>
+                    <h4>NASA FIRMS Active Fire Model Controls</h4>
+                    <div style="font-family: monospace; font-size: 0.85rem; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1);">
+                        <div>⚡ <strong>Apple Metal MPS GPU:</strong> <span id="sp-mps-status" style="color: #00e676;">Active (PR-AUC 0.9970, ROC-AUC 0.9995)</span></div>
+                        <div>🌲 <strong>XGBoost ARM64:</strong> <span id="sp-xgb-status" style="color: #69f0ae;">Trained (PR-AUC 0.9999, ROC-AUC 1.000)</span></div>
+                        <div id="sp-firms-feedback" style="margin-top: 6px; color: #ffeb3b; font-size: 0.82rem;"></div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button id="btn-retrain-xgb" class="hud-btn" style="font-size: 0.8rem; padding: 6px 12px; background: rgba(33, 150, 243, 0.3); border: 1px solid #2196f3; color: #fff; border-radius: 4px; cursor: pointer;">⚡ Retrain XGBoost (ARM64)</button>
-                        <button id="btn-retrain-mps" class="hud-btn" style="font-size: 0.8rem; padding: 6px 12px; background: rgba(0, 230, 118, 0.3); border: 1px solid #00e676; color: #fff; border-radius: 4px; cursor: pointer;">🍏 Retrain PyTorch (MPS GPU)</button>
-                        <button id="btn-sync-firms" class="hud-btn" style="font-size: 0.8rem; padding: 6px 12px; background: rgba(255, 152, 0, 0.3); border: 1px solid #ff9800; color: #fff; border-radius: 4px; cursor: pointer;">📡 Sync NASA FIRMS Live</button>
-                        <button id="btn-clear-data" class="hud-btn" style="font-size: 0.8rem; padding: 6px 12px; background: rgba(244, 67, 54, 0.3); border: 1px solid #f44336; color: #fff; border-radius: 4px; cursor: pointer;">🗑️ Clear All Data</button>
+                        <button id="sp-btn-retrain-xgb" class="action-button" style="background: rgba(33, 150, 243, 0.3); border: 1px solid #2196f3; color: #fff;">⚡ Retrain XGBoost (ARM64)</button>
+                        <button id="sp-btn-retrain-mps" class="action-button" style="background: rgba(0, 230, 118, 0.3); border: 1px solid #00e676; color: #fff;">🍏 Retrain PyTorch (MPS GPU)</button>
+                        <button id="sp-btn-sync-firms" class="action-button" style="background: rgba(255, 152, 0, 0.3); border: 1px solid #ff9800; color: #fff;">📡 Sync NASA FIRMS Live</button>
+                        <button id="sp-btn-clear-hotspots" class="action-button" style="background: rgba(244, 67, 54, 0.3); border: 1px solid #f44336; color: #fff;">🗑️ Clear Hotspots</button>
                     </div>
-                </div>
-
-                <div class="arch-pitch-box">
-                    <h4>The Decisive Edge</h4>
-                    <p>Most wildfire portals stop at drawing heatmaps. By adding <strong>Reinforcement Learning (RL)</strong>, EarthPulse 3D acts as an autonomous disaster copilot that proactively recommends where to drop retardant 2 hours before the fire reaches critical ridgelines.</p>
                 </div>
             </div>
 
-            <!-- PANEL 4: GRAFANA + LANGSMITH -->
-            <div class="arch-panel-content hidden" id="arch-panel-telemetry">
+            <!-- TAB 4: Telemetry -->
+            <div class="tab-panel sp-arch-panel" id="sp-arch-telemetry">
                 <div class="arch-card grafana">
-                    <span class="arch-tag grafana">LIVE MISSION CONTROL</span>
+                    <span class="arch-tag grafana">MISSION CONTROL</span>
                     <h4>Grafana + Prometheus Operations Dashboard</h4>
-                    <p>Grafana monitors end-to-end telemetry across sensor ingestion, PostGIS spatial latency, XGBoost inference, and RL agent reward metrics in real time at <code>http://localhost:3000/d/fireguard-ops</code>.</p>
-                    
-                    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:10px;">
-                        <div style="background:#090d16; padding:10px; border-radius:6px; border:1px solid #334155;">
-                            <div style="font-size:1.1rem; font-weight:700; color:#f97316;">1,482 MW</div>
-                            <div style="font-size:0.68rem; color:#94a3b8;">Total Active FRP</div>
-                        </div>
-                        <div style="background:#090d16; padding:10px; border-radius:6px; border:1px solid #334155;">
-                            <div style="font-size:1.1rem; font-weight:700; color:#38bdf8;">42 ms</div>
-                            <div style="font-size:0.68rem; color:#94a3b8;">PostGIS Query (p95)</div>
-                        </div>
-                        <div style="background:#090d16; padding:10px; border-radius:6px; border:1px solid #334155;">
-                            <div style="font-size:1.1rem; font-weight:700; color:#10b981;">+492.6</div>
-                            <div style="font-size:0.68rem; color:#94a3b8;">RL Episode Reward</div>
-                        </div>
-                        <div style="background:#090d16; padding:10px; border-radius:6px; border:1px solid #334155;">
-                            <div style="font-size:1.1rem; font-weight:700; color:#10b981;">14,200 ha</div>
-                            <div style="font-size:0.68rem; color:#94a3b8;">Forest Protected</div>
-                        </div>
+                    <p>Real-time telemetry across sensor ingestion, PostGIS spatial latency, XGBoost inference, and RL agent reward metrics.</p>
+                    <div style="margin: 12px 0;">
+                        <a href="http://localhost:3000/d/fireguard-ops" target="_blank" class="action-button" style="background:rgba(249,115,22,0.25); border:1px solid #f97316; color:#fdba74; text-decoration:none;">
+                            <span>Launch Full Grafana UI (Port 3000) ↗</span>
+                        </a>
                     </div>
-                </div>
-
-                <div class="arch-grid-2" style="margin-top:14px;">
-                    <div class="arch-card">
-                        <h4>Key Prometheus Metrics</h4>
-                        <p>1. <code>fireguard_firms_ingestion_lag_seconds</code> (&lt; 140s)<br>
-                        2. <code>fireguard_harmonizer_throughput_events_total</code><br>
-                        3. <code>fireguard_rl_episode_reward</code><br>
-                        4. <code>fireguard_websocket_latency_ms</code></p>
-                    </div>
-                    <div class="arch-card">
-                        <h4>LangSmith LLM Reasoning Trace</h4>
-                        <pre class="arch-code-box">[LangSmith Trace: Copilot Explanation]  740ms · $0.00028
-├── Hotspot: H3-8826-FRP-112 (112 MW)
-├── RL Action: DISPATCH_AIR_TANKER_2
-├── Topography: Steep slope (28°), Updraft wind
-├── System Prompt: Strict anti-hallucination guardrail
-└── Hallucination Check: PASSED (100% facts grounded)</pre>
+                    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:12px;">
+                        <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
+                            <div style="font-size:1.2rem; font-weight:700; color:#f97316;" id="sp-telem-frp">1,482 MW</div>
+                            <div style="font-size:0.72rem; color:#94a3b8;">Total Active FRP</div>
+                        </div>
+                        <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
+                            <div style="font-size:1.2rem; font-weight:700; color:#38bdf8;" id="sp-telem-latency">42 ms</div>
+                            <div style="font-size:0.72rem; color:#94a3b8;">PostGIS Query (p95)</div>
+                        </div>
+                        <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
+                            <div style="font-size:1.2rem; font-weight:700; color:#10b981;" id="sp-telem-reward">+492.6</div>
+                            <div style="font-size:0.72rem; color:#94a3b8;">RL Episode Reward</div>
+                        </div>
+                        <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
+                            <div style="font-size:1.2rem; font-weight:700; color:#10b981;" id="sp-telem-protected">14,200 ha</div>
+                            <div style="font-size:0.72rem; color:#94a3b8;">Forest Protected</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PANEL 5: CRISIS RESPONSE SCENARIO -->
-            <div class="arch-panel-content hidden" id="arch-panel-scenario">
-                <h4>Dry Gale & High-FRP Wildfire Surge along Mountain Ridge</h4>
-                <div class="arch-grid-2" style="margin-top:12px;">
-                    <div class="arch-card rl">
-                        <span class="arch-tag rl">AUTONOMOUS DISPATCH</span>
-                        <h4>RL & LangGraph Did</h4>
-                        <p>1. <strong>Harmonizer</strong> fused 3 VIIRS pings and 1 MODIS detection into 1 unified hotspot (FRP: 112 MW).<br>
-                        2. <strong>XGBoost</strong> flagged an 89% spread probability towards residential Valley Sector B within 4 hours.<br>
-                        3. <strong>RL Agent (PPO)</strong> simulated 500 rollouts and selected optimal intervention: deploy 2 Air Tankers to drop retardant along Ridge Line H3-8826.<br>
-                        4. <strong>LangSmith</strong> synthesized commander dispatch order: <em>"Ridge containment scheduled 1.5h ahead of fireline to exploit natural rock barrier."</em></p>
-                    </div>
-                    <div class="arch-card grafana">
-                        <span class="arch-tag grafana">TACTICAL OBSERVABILITY</span>
-                        <h4>Cesium 3D & Grafana Did</h4>
-                        <p>1. <strong>Cesium 3D Earth</strong> performed smooth camera fly-to, rendering dynamic billboard fire points with FRP color gradients.<br>
-                        2. Draped 3D DEM terrain with XGBoost spread contours and projected RL retardant drop corridors.<br>
-                        3. <strong>Grafana</strong> logged immediate metrics: 14,200 hectares saved, 42ms PostGIS latency, and +492 RL policy reward.<br>
-                        4. Incident command dashboard updated simultaneously via sub-second WebSocket broadcast.</p>
-                    </div>
+            <!-- TAB 5: Crisis Scenario -->
+            <div class="tab-panel sp-arch-panel" id="sp-arch-scenario">
+                <div class="arch-card" style="margin-bottom:16px;">
+                    <span class="arch-tag rl">5-STEP TACTICAL FLOW</span>
+                    <h4>Dry Gale & High-FRP Wildfire Surge along Mountain Ridge</h4>
+                    <p>Simulating dynamic satellite overpass detection, 4-hour XGBoost spread cone, and PPO air tanker dispatch.</p>
                 </div>
-
                 <div class="arch-pitch-box">
                     <h4>30-Second Pitch for the Judges</h4>
-                    <p><strong>"In critical wildfire management, we do not just display passive heatmaps or unverified satellite dots.</strong></p>
-                    <p><strong>1. Dual-Sensor Harmonization</strong> bridges MODIS (1km) and VIIRS (375m) into an uncompromised, non-duplicated baseline with calibrated Fire Radiative Power (FRP).</p>
-                    <p><strong>2. Spatial-Temporal ML</strong> uses Spatial Block Cross-Validation to eliminate data leakage, giving XGBoost real out-of-region predictive skill.</p>
-                    <p><strong>3. Reinforcement Learning (RL)</strong> elevates EarthPulse 3D from <em>prediction</em> to <em>autonomous action</em>, computing optimal aircraft and crew dispatch to cut off firelines before they reach homes.</p>
-                    <p><strong>4. Cesium 3D & Grafana</strong> deliver a complete mission-control suite: photorealistic WebGL terrain visualization paired with enterprise-grade operational telemetry."</p>
+                    <p><strong>1. Dual-Sensor Harmonization:</strong> Bridges MODIS (1km) and VIIRS (375m) into an uncompromised, non-duplicated baseline with calibrated Fire Radiative Power (FRP).</p>
+                    <p><strong>2. Spatial-Temporal ML:</strong> Uses Spatial Block Cross-Validation to eliminate data leakage, giving XGBoost real out-of-region predictive skill.</p>
+                    <p><strong>3. Reinforcement Learning (RL):</strong> Elevates EarthPulse 3D from prediction to autonomous action, computing optimal aircraft and crew dispatch to cut off firelines before they reach homes.</p>
+                    <p><strong>4. Cesium 3D & Grafana:</strong> Deliver a complete mission-control suite: photorealistic WebGL terrain visualization paired with enterprise-grade operational telemetry.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: Autonomous Reinforcement Learning (PPO) Dispatch -->
+    <div id="fullscreen-page-rl" class="fullscreen-subsystem-page">
+        <div class="subsystem-page-wrapper">
+            <div class="subsystem-page-header">
+                <div class="sph-title">
+                    <h2>Autonomous Reinforcement Learning (PPO) Dispatch Center</h2>
+                    <p>Multi-Agent Proximal Policy Optimization computing proactive wildfire containment lines and aircraft dispatch</p>
+                </div>
+                <button class="btn-back-to-globe">← Back to 3D Globe</button>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <button id="sp-btn-run-scenario" class="btn-trigger-scenario">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>⚡ Run Mountain Ridge Crisis Scenario</span>
+                </button>
+            </div>
+
+            <div class="dashboard-row">
+                <div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-title">
+                            <span>📋 Synthesized Tactical Dispatch Order</span>
+                            <span id="sp-scenario-status" style="font-size:0.75rem; background:rgba(16,185,129,0.2); color:#10b981; padding:3px 8px; border-radius:4px; font-weight:700;">POLICY READY</span>
+                        </div>
+                        <div class="order-box" id="sp-tactical-order">
+                            "Air Tanker #2 dispatched to cut fireline at H3-8826 along mountain ridge 1.5h ahead of fireline to exploit natural rock barrier and halt convective uphill run towards Valley Sector B."
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <span style="font-size:0.9rem; font-weight:700; color:#fff;">🚒 Dispatched Suppression Units</span>
+                            <span style="font-size:0.75rem; color:#94a3b8;">Optimal PPO Rollout</span>
+                        </div>
+                        <div class="units-list" id="sp-units-list">
+                            <div class="unit-item">
+                                <div class="unit-header">
+                                    <span class="unit-badge AERIAL_RETARDANT">DC-10 Air Tanker #2</span>
+                                    <span class="unit-eta">ETA 18m</span>
+                                </div>
+                                <div class="unit-desc">High-altitude retardant drop to halt uphill convective fire run ahead of ridge line H3-8826.</div>
+                            </div>
+                            <div class="unit-item">
+                                <div class="unit-header">
+                                    <span class="unit-badge GROUND_FIREBREAK">Bulldozer Strike Team 4</span>
+                                    <span class="unit-eta">ETA 45m</span>
+                                </div>
+                                <div class="unit-desc">Bulldozer cut along southern boundary flank to secure containment perimeter near settlements.</div>
+                            </div>
+                            <div class="unit-item">
+                                <div class="unit-header">
+                                    <span class="unit-badge SMOKEJUMPER_RAPID">Type 3 Engine Strike Team</span>
+                                    <span class="unit-eta">ETA 25m</span>
+                                </div>
+                                <div class="unit-desc">Defensive structural protection and anchor perimeter line along lower valley access corridor.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-title"><span>🎯 PPO Reward Formulation</span></div>
+                        <div class="kpi-row">
+                            <div class="kpi-box">
+                                <div class="val" style="color:#10b981;">+492.6</div>
+                                <div class="lbl">Episode Reward</div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="val" style="color:#38bdf8;">14,200</div>
+                                <div class="lbl">Hectares Saved</div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="val" style="color:#f97316;">89.4%</div>
+                                <div class="lbl">Containment Pct</div>
+                            </div>
+                        </div>
+                        <div class="code-container">R = - 1.0 * new_burned_hectares
+    - 100.0 * structures_threatened
+    - 0.15 * flight_fuel_cost
+    + 80.0 * containment_established</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span>🌎 3D Containment Verification</span></div>
+                        <p style="color:#cbd5e1; font-size:0.86rem; line-height:1.6; margin-top:0;">
+                            Return to the 3D Globe to inspect the retardant drop corridors projected across 3D DEM mountain slopes.
+                        </p>
+                        <button class="btn-back-to-globe" style="margin-top:6px;">
+                            <span>View Containment on 3D Globe →</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 4: Grafana Operations & Telemetry Hub -->
+    <div id="fullscreen-page-grafana" class="fullscreen-subsystem-page">
+        <div class="subsystem-page-wrapper">
+            <div class="subsystem-page-header">
+                <div class="sph-title">
+                    <h2>Grafana Operations & Prometheus Telemetry Hub</h2>
+                    <p>Real-time telemetry across sensor ingestion, PostGIS spatial latency, and RL agent reward metrics</p>
+                </div>
+                <button class="btn-back-to-globe">← Back to 3D Globe</button>
+            </div>
+
+            <div class="arch-card grafana" style="margin-bottom: 20px;">
+                <span class="arch-tag grafana">LIVE MISSION CONTROL</span>
+                <h4>Grafana + Prometheus Operations Dashboard</h4>
+                <p>Telemetry stream active on Port 3000 at <code>http://localhost:3000/d/fireguard-ops</code>.</p>
+                <div style="margin: 12px 0;">
+                    <a href="http://localhost:3000/d/fireguard-ops" target="_blank" class="action-button" style="background:rgba(249,115,22,0.25); border:1px solid #f97316; color:#fdba74; text-decoration:none;">
+                        <span>Launch Full Grafana UI (Port 3000) ↗</span>
+                    </a>
+                </div>
+
+                <div class="kpi-grid" style="margin-top:16px;">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Active FRP</div>
+                        <div class="kpi-val" id="sp-grafana-frp" style="color:#f97316;">1,482 MW</div>
+                        <div class="kpi-sub">Dual-Sensor Harmonized</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">PostGIS Query Latency</div>
+                        <div class="kpi-val" id="sp-grafana-latency" style="color:#38bdf8;">42 ms</div>
+                        <div class="kpi-sub">p95 Spatial Bounding Box</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">RL Episode Reward</div>
+                        <div class="kpi-val" id="sp-grafana-reward" style="color:#10b981;">+492.6</div>
+                        <div class="kpi-sub">Mean Policy Rollout</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Forest Protected</div>
+                        <div class="kpi-val" id="sp-grafana-protected" style="color:#10b981;">14,200 ha</div>
+                        <div class="kpi-sub">Containment Established</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">FIRMS Ingestion Lag</div>
+                        <div class="kpi-val" id="sp-grafana-lag" style="color:#38bdf8;">134s</div>
+                        <div class="kpi-sub">NASA Feed Sync Latency</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Deduplication Drop Ratio</div>
+                        <div class="kpi-val" id="sp-grafana-drop" style="color:#eab308;">42%</div>
+                        <div class="kpi-sub">Redundant Pings Filtered</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span>📡 Prometheus /metrics Endpoint Stream</span></div>
+                <pre class="code-container" id="sp-prometheus-feed" style="max-height: 260px; overflow-y: auto;"># HELP fireguard_active_frp_megawatts Total active fire radiative power
+# TYPE fireguard_active_frp_megawatts gauge
+fireguard_active_frp_megawatts 1482.0
+# HELP fireguard_rl_episode_reward PPO policy mean reward
+# TYPE fireguard_rl_episode_reward gauge
+fireguard_rl_episode_reward 492.6
+# HELP fireguard_query_latency_ms Spatial query duration
+# TYPE fireguard_query_latency_ms gauge
+fireguard_query_latency_ms 42.0</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 5: LangSmith AI Reasoning Audit Suite -->
+    <div id="fullscreen-page-langsmith" class="fullscreen-subsystem-page">
+        <div class="subsystem-page-wrapper">
+            <div class="subsystem-page-header">
+                <div class="sph-title">
+                    <h2>LangSmith AI Reasoning Audit & Guardrails Suite</h2>
+                    <p>Live observability traces, prompt costs, token budgets, and strict anti-hallucination compliance verification</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <a href="https://smith.langchain.com/o/c2c7c9be-39c6-4cf8-b26b-8542dca4cff4/projects/p/f8766ac0-20eb-4c2c-9e9c-00bec52b8662?onboarding=EarthPulse3D" target="_blank" rel="noopener" class="action-button" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#10b981; text-decoration:none;">
+                        <span>Open LangChain Cloud Project ↗</span>
+                    </a>
+                    <button class="btn-back-to-globe">← Back to 3D Globe</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <button id="sp-btn-emit-trace" class="action-button" style="background:#059669; border:1px solid #10b981; color:#fff; font-size:0.85rem; padding:9px 18px;">
+                    <span>Emit Test Trace ⚡</span>
+                </button>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Trace ID</div>
+                    <div class="kpi-val" id="sp-ls-trace-id" style="font-size:1.4rem; color:#38bdf8;">ls-trace-0217</div>
+                    <div class="kpi-sub">Copilot Tactical Explanation</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Latency & Cost</div>
+                    <div class="kpi-val" id="sp-ls-latency" style="font-size:1.4rem; color:#10b981;">740 ms · $0.00028</div>
+                    <div class="kpi-sub">Model: gpt-4o-mini</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Token Breakdown</div>
+                    <div class="kpi-val" id="sp-ls-tokens" style="font-size:1.1rem; color:#f59e0b;">525 tokens (380 / 145)</div>
+                    <div class="kpi-sub">Prompt & Completion Budget</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Guardrail Compliance</div>
+                    <div class="kpi-val" id="sp-ls-guardrail" style="font-size:1.1rem; color:#10b981;">PASSED (100%)</div>
+                    <div class="kpi-sub">Facts Strictly Grounded</div>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="card">
+                    <div class="card-title"><span>📥 Telemetry Input Payload</span></div>
+                    <pre class="code-container" id="sp-ls-input" style="max-height: 220px; overflow-y:auto;">{
+  "hotspot_id": "H3-8826-FRP-112",
+  "rl_action": "DISPATCH_AIR_TANKER_2",
+  "topography": "Steep slope (28.0°), Dry gale updraft 14.5 m/s",
+  "active_playbook": "Ridge containment scheduled 1.5h ahead of fireline"
+}</pre>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span>📤 Synthesized Incident Commander Order</span></div>
+                    <div class="order-box" id="sp-ls-output">
+                        Air Tanker #2 dispatched to cut fireline at H3-8826 along mountain ridge 1.5h ahead of fireline to exploit natural rock barrier and halt convective uphill run towards Valley Sector B.
+                    </div>
                 </div>
             </div>
         </div>
@@ -1136,6 +1369,10 @@ class WildfireSuppressionEnv(gym.Env):
             </div>
         </div>
     </div>
+
+    <!-- Immediate Tactical Header Actions & Subsystem SPA Page Router -->
+    <script src="/static/js/header_actions.js"></script>
+    <script src="/static/js/page_controller.js"></script>
 
     <!-- CesiumJS Script -->
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>

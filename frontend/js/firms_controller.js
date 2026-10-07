@@ -87,9 +87,16 @@ export class FIRMSController {
             this.btnFirms2D.addEventListener('click', () => this.setMode('firms2d'));
         }
 
-        // 2. Analytics Drawer Toggle
+        // 2. Analytics Drawer Toggle -> Delegate to full-screen page if pageController exists
         if (this.btnAnalyticsToggle) {
-            this.btnAnalyticsToggle.addEventListener('click', () => this.toggleAnalyticsDrawer());
+            this.btnAnalyticsToggle.addEventListener('click', (e) => {
+                if (window.pageController) {
+                    e.preventDefault();
+                    window.pageController.showPage('impact');
+                    return;
+                }
+                this.toggleAnalyticsDrawer();
+            });
         }
         if (this.drawerCloseBtn) {
             this.drawerCloseBtn.addEventListener('click', () => this.toggleAnalyticsDrawer(false));

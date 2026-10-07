@@ -24,7 +24,7 @@ except Exception as e:
 
 from pydantic import BaseModel
 from .spatial_index import spatial_index
-from .data_generator import get_all_hotspots
+from .data_generator import get_all_hotspots, load_user_dataset, get_dataset_info, clear_all_hotspots
 from .app.harmonizer import HarmonizationPipeline, get_real_satellite_detections
 from .app.ml import fire_spread_predictor, fire_ml_model
 from .app.rl import rl_dispatcher
@@ -426,6 +426,11 @@ async def websocket_telemetry_endpoint(websocket: WebSocket):
 @app.post("/api/client-log")
 async def client_log_endpoint(payload: Dict[str, Any]):
     print(f"🚨 BROWSER CLIENT LOG: {payload}")
+    try:
+        with open("/tmp/earthpulse_client.log", "a") as f:
+            f.write(json.dumps(payload) + "\n")
+    except Exception:
+        pass
     return {"status": "ok"}
 
 class ChatMessagePayload(BaseModel):
@@ -621,6 +626,55 @@ async def clear_all_hotspots_endpoint():
         "total_hotspots_catalog": 0
     }
 
+class LoadDatasetPayload(BaseModel):
+    file_path: Optional[str] = None
+
+@app.get("/api/dataset/status")
+async def get_dataset_status_endpoint():
+    """
+    Returns current status and metadata of user custom dataset.
+    """
+    return get_dataset_info()
+
+@app.post("/api/dataset/load")
+async def load_user_dataset_endpoint(payload: Optional[LoadDatasetPayload] = None):
+    """
+    Loads user custom wildfire dataset (from specified path or auto-detected in backend/data/).
+    Updates spatial index and informs connected 3D clients.
+    """
+    t0 = time.time()
+    file_path = payload.file_path if payload else None
+    try:
+        records = load_user_dataset(file_path=file_path)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse dataset: {e}")
+
+    spatial_index.load_hotspots(records)
+    total_frp = sum(p.get("harmonized_frp", 0.0) for p in records)
+    metrics_manager.update_frp(total_frp)
+
+    info = get_dataset_info()
+    ws_payload = {
+        "type": "DATASET_LOADED",
+        "message": f"User dataset loaded: {len(records)} records",
+        "catalog_count": len(records),
+        "dataset_info": info
+    }
+    for ws in list(active_websockets):
+        try:
+            await ws.send_text(json.dumps(ws_payload))
+        except Exception:
+            pass
+
+    return {
+        "status": "SUCCESS",
+        "duration_ms": round((time.time() - t0) * 1000, 1),
+        "total_loaded": len(records),
+        "dataset": info
+    }
+
 GEOCODE_CACHE = {}
 
 @app.get("/api/geocode")
@@ -698,6 +752,42 @@ async def serve_index():
     if os.path.exists(index_path):
         return FileResponse(index_path)
     return {"message": "Frontend not found, please check frontend/index.html"}
+
+@app.api_route("/impact", methods=["GET", "HEAD"])
+@app.api_route("/analytics", methods=["GET", "HEAD"])
+async def serve_impact_page():
+    page_path = os.path.join(FRONTEND_DIR, "impact.html")
+    if os.path.exists(page_path):
+        return FileResponse(page_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.api_route("/architecture", methods=["GET", "HEAD"])
+async def serve_architecture_page():
+    page_path = os.path.join(FRONTEND_DIR, "architecture.html")
+    if os.path.exists(page_path):
+        return FileResponse(page_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.api_route("/rl", methods=["GET", "HEAD"])
+async def serve_rl_page():
+    page_path = os.path.join(FRONTEND_DIR, "rl.html")
+    if os.path.exists(page_path):
+        return FileResponse(page_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.api_route("/grafana", methods=["GET", "HEAD"])
+async def serve_grafana_page():
+    page_path = os.path.join(FRONTEND_DIR, "grafana.html")
+    if os.path.exists(page_path):
+        return FileResponse(page_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.api_route("/langsmith", methods=["GET", "HEAD"])
+async def serve_langsmith_page():
+    page_path = os.path.join(FRONTEND_DIR, "langsmith.html")
+    if os.path.exists(page_path):
+        return FileResponse(page_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 if __name__ == "__main__":
     import uvicorn

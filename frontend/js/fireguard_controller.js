@@ -18,6 +18,28 @@ export class FireGuardController {
 
         this.initWebSocket();
         this.initUI();
+
+        // If crisis scenario was triggered during page load, render it now
+        if (window._pendingCrisisScenarioData) {
+            const pending = window._pendingCrisisScenarioData;
+            window._pendingCrisisScenarioData = null;
+            setTimeout(() => {
+                if (pending.target) {
+                    this.viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(pending.target.lon, pending.target.lat, 16000),
+                        orientation: {
+                            heading: Cesium.Math.toRadians(35.0),
+                            pitch: Cesium.Math.toRadians(-32.0),
+                            roll: 0.0
+                        },
+                        duration: 2.8,
+                        complete: () => {
+                            this.renderScenarioGraphics(pending);
+                        }
+                    });
+                }
+            }, 600);
+        }
     }
 
     initWebSocket() {
@@ -68,53 +90,106 @@ export class FireGuardController {
             });
         });
 
-        // Open / Close Architecture Modal
-        const btnOpenArch = document.getElementById('btn-open-arch');
-        const modalArch = document.getElementById('fireguard-arch-modal');
-        const btnCloseArch = document.getElementById('btn-close-arch');
-        if (btnOpenArch && modalArch) {
-            btnOpenArch.addEventListener('click', () => modalArch.classList.remove('hidden'));
-        }
-        if (btnCloseArch && modalArch) {
-            btnCloseArch.addEventListener('click', () => modalArch.classList.add('hidden'));
+        // Helper: Open Architecture Modal to specific tab
+        this.openArchitectureModal = (tabName = 'roles') => {
+            if (window.earthPulseHeaderActions && typeof window.earthPulseHeaderActions.openArchitectureModal === 'function') {
+                window.earthPulseHeaderActions.openArchitectureModal(tabName);
+                return;
+            }
+            const modal = document.getElementById('fireguard-arch-modal');
+            const backdrop = document.getElementById('fireguard-arch-backdrop');
+            if (modal) modal.classList.remove('hidden');
+            if (backdrop) backdrop.classList.remove('hidden');
+            if (tabName) {
+                const tabs = document.querySelectorAll('.arch-tab-btn');
+                tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+                document.querySelectorAll('.arch-panel-content').forEach(p => {
+                    p.classList.toggle('hidden', p.id !== `arch-panel-${tabName}`);
+                });
+            }
+        };
+
+        if (!window.earthPulseHeaderActions) {
+            // Open Architecture Modal (Header button)
+            const btnOpenArch = document.getElementById('btn-open-arch');
+            const modalArch = document.getElementById('fireguard-arch-modal');
+            const btnCloseArch = document.getElementById('btn-close-arch');
+            if (btnOpenArch && modalArch) {
+                btnOpenArch.addEventListener('click', () => this.openArchitectureModal('roles'));
+            }
+            if (btnCloseArch && modalArch) {
+                btnCloseArch.addEventListener('click', () => modalArch.classList.add('hidden'));
+            }
+
+            // Grafana Ops Button (Header button)
+            const btnOpenGrafana = document.getElementById('btn-open-grafana');
+            if (btnOpenGrafana && modalArch) {
+                btnOpenGrafana.addEventListener('click', () => {
+                    this.openArchitectureModal('telemetry');
+                    this.updateTelemetryHUD();
+                });
+            }
+
+            // Crisis Scenario Button in Header / HUD (Reinforcement Learning Dispatch)
+            const btnTriggerScenario = document.getElementById('btn-trigger-crisis-scenario');
+            if (btnTriggerScenario) {
+                btnTriggerScenario.addEventListener('click', () => this.runMountainRidgeScenario());
+            }
         }
 
-        // Crisis Scenario Button in Header / HUD
-        const btnTriggerScenario = document.getElementById('btn-trigger-crisis-scenario');
-        if (btnTriggerScenario) {
-            btnTriggerScenario.addEventListener('click', () => this.runMountainRidgeScenario());
-        }
-
-        // LangSmith Drawer Close Button
-        const btnCloseLangsmith = document.getElementById('btn-close-langsmith');
-        const drawerLangsmith = document.getElementById('langsmith-drawer');
-        if (btnCloseLangsmith && drawerLangsmith) {
-            btnCloseLangsmith.addEventListener('click', () => drawerLangsmith.classList.add('collapsed'));
-        }
-
-        const btnOpenLangsmith = document.getElementById('btn-open-langsmith');
-        if (btnOpenLangsmith && drawerLangsmith) {
-            btnOpenLangsmith.addEventListener('click', () => {
-                drawerLangsmith.classList.remove('collapsed');
-                this.refreshLangSmithTraces();
+        if (!window.earthPulseHeaderActions) {
+            // Telemetry Strip Pills (Click to inspect related architecture tabs)
+            document.querySelectorAll('.telem-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    if (pill.classList.contains('rl')) {
+                        this.openArchitectureModal('ml-rl');
+                    } else {
+                        this.openArchitectureModal('telemetry');
+                    }
+                });
             });
-        }
 
-        const btnEmitTest = document.getElementById('btn-ls-test-emit');
-        if (btnEmitTest) {
-            btnEmitTest.addEventListener('click', async () => {
-                btnEmitTest.textContent = 'Emitting...';
-                btnEmitTest.disabled = true;
-                const result = await window.dataService.emitTestLangSmithTrace();
-                if (result && result.trace) {
-                    this.displayLangSmithTrace(result.trace, null);
+            // Close architecture modal on Escape key
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modalArch = document.getElementById('fireguard-arch-modal');
+                    if (modalArch && !modalArch.classList.contains('hidden')) {
+                        modalArch.classList.add('hidden');
+                    }
                 }
-                btnEmitTest.textContent = 'Emitted! ⚡';
-                setTimeout(() => {
-                    btnEmitTest.textContent = 'Emit Trace ⚡';
-                    btnEmitTest.disabled = false;
-                }, 2000);
             });
+
+            // LangSmith Drawer Close Button
+            const btnCloseLangsmith = document.getElementById('btn-close-langsmith');
+            const drawerLangsmith = document.getElementById('langsmith-drawer');
+            if (btnCloseLangsmith && drawerLangsmith) {
+                btnCloseLangsmith.addEventListener('click', () => drawerLangsmith.classList.add('collapsed'));
+            }
+
+            const btnOpenLangsmith = document.getElementById('btn-open-langsmith');
+            if (btnOpenLangsmith && drawerLangsmith) {
+                btnOpenLangsmith.addEventListener('click', () => {
+                    drawerLangsmith.classList.remove('collapsed');
+                    this.refreshLangSmithTraces();
+                });
+            }
+
+            const btnEmitTest = document.getElementById('btn-ls-test-emit');
+            if (btnEmitTest) {
+                btnEmitTest.addEventListener('click', async () => {
+                    btnEmitTest.textContent = 'Emitting...';
+                    btnEmitTest.disabled = true;
+                    const result = await window.dataService.emitTestLangSmithTrace();
+                    if (result && result.trace) {
+                        this.displayLangSmithTrace(result.trace, null);
+                    }
+                    btnEmitTest.textContent = 'Emitted! ⚡';
+                    setTimeout(() => {
+                        btnEmitTest.textContent = 'Emit Trace ⚡';
+                        btnEmitTest.disabled = false;
+                    }, 2000);
+                });
+            }
         }
 
         // Layer Toggles
@@ -200,7 +275,7 @@ export class FireGuardController {
         } finally {
             if (btn) {
                 btn.classList.remove('pulsing');
-                btn.innerHTML = `⚡ Ridge Crisis Scenario`;
+                btn.innerHTML = `<svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>⚡ Reinforcement RL</span>`;
             }
         }
     }
@@ -312,6 +387,11 @@ export class FireGuardController {
     }
 
     displayLangSmithTrace(trace, rlPlan) {
+        if (window.earthPulseHeaderActions && typeof window.earthPulseHeaderActions.displayLangSmithTrace === 'function') {
+            window.earthPulseHeaderActions.displayLangSmithTrace(trace, rlPlan);
+            return;
+        }
+
         const drawer = document.getElementById('langsmith-drawer');
         if (!drawer) return;
 

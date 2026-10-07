@@ -55,11 +55,9 @@ def parse_viirs_confidence(conf_val: str) -> float:
 
 def get_real_satellite_detections(limit_per_sensor: int = 1500) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    Parses genuine NASA FIRMS active fire records from MODIS and VIIRS CSV files.
+    Parses genuine NASA FIRMS active fire records from MODIS and VIIRS CSV files if present.
     Returns (modis_detections, viirs_detections).
     """
-    ensure_firms_data_downloaded()
-
     modis_detections: List[Dict[str, Any]] = []
     viirs_detections: List[Dict[str, Any]] = []
 

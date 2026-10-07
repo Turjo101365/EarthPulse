@@ -75,8 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         credit: 'NASA GIBS VIIRS Night Lights'
     });
 
-    // 2. Initialize Cesium Viewer with Google Earth 4K Ultra-HD Satellite Base Layer
-    const activeBaseLayer = new Cesium.ImageryLayer(basemapProviders.google_earth);
+    // 2. Initialize Cesium Viewer with Google Earth Hybrid Base Layer
+    const activeBaseLayer = new Cesium.ImageryLayer(basemapProviders.google_hybrid);
 
     const viewer = new Cesium.Viewer('cesiumContainer', {
         baseLayer: activeBaseLayer,
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =========================================================================
     // 4. Basemap Switcher & Atmosphere Toggles
     // =========================================================================
-    let currentBasemapKey = 'google_earth';
+    let currentBasemapKey = 'google_hybrid';
     const basemapButtons = document.querySelectorAll('.basemap-btn');
 
     function switchBasemap(key) {

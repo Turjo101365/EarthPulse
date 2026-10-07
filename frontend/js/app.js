@@ -96,6 +96,21 @@ async function initEarthPulseApp() {
         maximumScreenSpaceError: 2
     });
 
+    // Keep the page pinned to the viewport: reset any stray scroll offset
+    // (e.g. caused by focusing off-screen elements) and keep canvas size in sync.
+    const resetPageScroll = () => {
+        if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+        [document.documentElement, document.body].forEach(el => {
+            if (el.scrollLeft || el.scrollTop) { el.scrollLeft = 0; el.scrollTop = 0; }
+        });
+    };
+    window.addEventListener('scroll', resetPageScroll, { passive: true });
+    window.addEventListener('resize', () => {
+        resetPageScroll();
+        viewer.resize();
+    });
+    window.addEventListener('load', () => { resetPageScroll(); viewer.resize(); });
+
     // =========================================================================
     // 3. Photorealistic Atmosphere & NASA Optics Setup
     // =========================================================================

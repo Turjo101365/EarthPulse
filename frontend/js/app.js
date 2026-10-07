@@ -1,5 +1,6 @@
 import { FIRMSController } from './firms_controller.js';
 import { FireGuardController } from './fireguard_controller.js';
+import { ChatController } from './chat_controller.js';
 
 /**
  * Main Application Orchestrator for Photorealistic 3D Earth
@@ -775,6 +776,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =========================================================================
     const fireGuardController = new FireGuardController(viewer);
     window.fireGuardController = fireGuardController;
+
+    // =========================================================================
+    // 8c. Initialize PulseAI Tactical Wildfire Copilot & RAG Assistant
+    // =========================================================================
+    const chatController = new ChatController({
+        viewer,
+        cameraController,
+        fireGuardController,
+        firmsController
+    });
+    window.chatController = chatController;
 
     // =========================================================================
     // 9. Wire Up On-Screen Camera D-Pad & Flight Tour

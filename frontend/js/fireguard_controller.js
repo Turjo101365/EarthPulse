@@ -35,6 +35,10 @@ export class FireGuardController {
                     const msg = JSON.parse(event.data);
                     if (msg.type === 'CRISIS_SCENARIO_TRIGGERED') {
                         this.handleRemoteScenario(msg);
+                    } else if (msg.type === 'HOTSPOTS_CLEARED') {
+                        if (window.cameraController) {
+                            window.cameraController.scheduleFetch();
+                        }
                     }
                 } catch (e) {
                     console.warn('WS message parse error:', e);

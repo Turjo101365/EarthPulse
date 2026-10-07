@@ -51,11 +51,13 @@ class WildfireSuppressionEnv(gym.Env):
         self.structures_saved = 0
         self.hectares_saved = 0.0
 
+        self.rng = np.random.RandomState(seed if seed is not None else 42)
+
         # Initialize environment grid with a realistic ignition core and settlements
         self.state = np.zeros((self.grid_size, self.grid_size, 5), dtype=np.float32)
 
         # Channel 1: Fuel density (vegetation)
-        self.state[:, :, 1] = 0.70 + np.random.uniform(-0.15, 0.15, (self.grid_size, self.grid_size))
+        self.state[:, :, 1] = 0.70 + self.rng.uniform(-0.10, 0.10, (self.grid_size, self.grid_size))
 
         # Channel 2: Slope (mountain ridge along diagonal)
         for r in range(self.grid_size):
@@ -131,7 +133,7 @@ class WildfireSuppressionEnv(gym.Env):
                     fuel = self.state[nr, nc, 1]
                     slope = self.state[nr, nc, 2]
                     # Spread probability driven by fuel & slope
-                    if np.random.rand() < (0.35 * fuel + 0.25 * slope):
+                    if self.rng.rand() < (0.35 * fuel + 0.25 * slope):
                         self.state[nr, nc, 0] = min(1.0, self.state[nr, nc, 0] + 0.35)
                         new_burned_hectares += 8.5
 

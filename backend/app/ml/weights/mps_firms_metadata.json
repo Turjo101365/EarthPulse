@@ -1,47 +1,47 @@
 {
   "status": "SUCCESS",
-  "timestamp_utc": "2026-10-07T04:58:57Z",
+  "timestamp_utc": "2026-10-07T05:01:05Z",
   "device": "mps",
   "device_name": "Apple Metal Performance Shaders (MPS:0)",
   "is_mps": true,
   "dataset": {
-    "total_records": 29978,
+    "total_records": 6000,
     "ingest_stats": {
-      "modis_count": 9978,
-      "viirs_snpp_count": 10000,
-      "viirs_noaa20_count": 10000,
-      "total": 29978
+      "modis_count": 2000,
+      "viirs_snpp_count": 2000,
+      "viirs_noaa20_count": 2000,
+      "total": 6000
     },
-    "train_samples": 22102,
-    "test_samples": 7876
+    "train_samples": 4738,
+    "test_samples": 1262
   },
   "training": {
     "epochs": 15,
     "batch_size": 512,
     "learning_rate": 0.003,
-    "train_duration_sec": 10.34,
+    "train_duration_sec": 2.19,
     "loss_history": [
-      0.6828,
-      0.2083,
-      0.1354,
-      0.114,
-      0.1044,
-      0.1002,
-      0.0983,
-      0.0965,
-      0.0866,
-      0.0917,
-      0.091,
-      0.0876,
-      0.0798,
-      0.0809,
-      0.0823
+      1.0589,
+      0.708,
+      0.5042,
+      0.3755,
+      0.2782,
+      0.2072,
+      0.1745,
+      0.1524,
+      0.1479,
+      0.1193,
+      0.1135,
+      0.1,
+      0.1049,
+      0.0855,
+      0.1004
     ]
   },
   "metrics": {
-    "pr_auc": 0.997,
-    "roc_auc": 0.9995,
-    "accuracy": 0.984,
-    "f1_score": 0.9434
+    "pr_auc": 0.9874,
+    "roc_auc": 0.9987,
+    "accuracy": 0.9762,
+    "f1_score": 0.8837
   }
 }

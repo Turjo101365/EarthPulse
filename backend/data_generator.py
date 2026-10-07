@@ -27,8 +27,6 @@ def initialize_harmonized_hotspots() -> List[Dict[str, Any]]:
 
 def get_all_hotspots() -> List[Dict[str, Any]]:
     """Returns the current list of active hotspots."""
-    if not ALL_HOTSPOTS:
-        initialize_harmonized_hotspots()
     return ALL_HOTSPOTS
 
 def set_all_hotspots(hotspots: List[Dict[str, Any]]) -> None:
@@ -45,6 +43,3 @@ def clear_all_hotspots() -> None:
     """Clears all hotspot records."""
     global ALL_HOTSPOTS
     ALL_HOTSPOTS.clear()
-
-# Initialize upon import
-initialize_harmonized_hotspots()

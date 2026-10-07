@@ -169,7 +169,7 @@ def parse_viirs_csv(file_path: Path, sensor_name: str, max_rows: Optional[int] =
 
 def load_all_firms_data(
     cache_dir: Optional[Path] = None,
-    download_if_missing: bool = True,
+    download_if_missing: bool = False,
     max_samples_per_sensor: Optional[int] = None
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """

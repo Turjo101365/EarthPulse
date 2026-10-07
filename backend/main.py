@@ -484,6 +484,33 @@ async def get_visible_hotspots(
     metrics_manager.record_query(query_latency_ms)
     return result
 
+@app.post("/api/hotspots/clear")
+async def clear_all_hotspots_endpoint():
+    """
+    Clears all active fire hotspots from the in-memory spatial index and active store.
+    """
+    from .data_generator import clear_all_hotspots
+    clear_all_hotspots()
+    spatial_index.load_hotspots([])
+    metrics_manager.update_frp(0.0)
+
+    payload = {
+        "type": "HOTSPOTS_CLEARED",
+        "message": "All fire hotspot data cleared",
+        "catalog_count": 0
+    }
+    for ws in list(active_websockets):
+        try:
+            await ws.send_text(json.dumps(payload))
+        except Exception:
+            pass
+
+    return {
+        "status": "SUCCESS",
+        "message": "All hotspots successfully removed",
+        "total_hotspots_catalog": 0
+    }
+
 GEOCODE_CACHE = {}
 
 @app.get("/api/geocode")

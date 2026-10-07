@@ -262,8 +262,11 @@ class CopilotService:
         co2 = telemetry["carbon_co2_mt"]
         hh = telemetry.get("highest_hotspot")
 
-        # 1. Action Confirmation Prompts
-        if action:
+        # Check if user explicitly asked for navigation vs asking an informational question
+        is_explicit_nav_cmd = any(w in lower for w in ["fly", "go to", "take me", "navigate", "jump", "নিয়ে যাও", "যাও", "দেখাও"]) and not any(w in lower for w in ["অবস্থা", "status", "kemon", "কি", "কেন", "why", "what", "how", "পার্থক্য"])
+
+        # 1. Action Confirmation Prompts (for pure explicit commands)
+        if action and is_explicit_nav_cmd:
             if action["type"] == "trigger_scenario":
                 if bengali:
                     return (

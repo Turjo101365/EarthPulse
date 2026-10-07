@@ -423,6 +423,11 @@ async def websocket_telemetry_endpoint(websocket: WebSocket):
 # 7b. AI Copilot Chatbot & RAG (Retrieval-Augmented Generation) Endpoints
 # =========================================================================
 
+@app.post("/api/client-log")
+async def client_log_endpoint(payload: Dict[str, Any]):
+    print(f"🚨 BROWSER CLIENT LOG: {payload}")
+    return {"status": "ok"}
+
 class ChatMessagePayload(BaseModel):
     message: str
     history: Optional[List[Dict[str, str]]] = None

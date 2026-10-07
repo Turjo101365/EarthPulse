@@ -6,7 +6,7 @@ import { ChatController } from './chat_controller.js';
  * Main Application Orchestrator for Photorealistic 3D Earth
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initEarthPulseApp() {
     // =========================================================================
     // 1. Fetch Environment Configuration Securely from Backend (.env)
     // =========================================================================
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const basemapProviders = {
         // 🌎 Google Earth Ultra-HD True Satellite (Sub-meter photorealistic satellite imagery)
         google_earth: new Cesium.UrlTemplateImageryProvider({
-            url: `https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}${GOOGLE_MAPS_API_KEY ? `&key=${GOOGLE_MAPS_API_KEY}` : ''}`,
+            url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
             tilingScheme: webMercator,
             maximumLevel: 21,
             credit: '© Google Earth Satellite'
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 🏷️ Google Earth Hybrid (Satellite Imagery + Geographic Borders, Roads & Cities)
         google_hybrid: new Cesium.UrlTemplateImageryProvider({
-            url: `https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}${GOOGLE_MAPS_API_KEY ? `&key=${GOOGLE_MAPS_API_KEY}` : ''}`,
+            url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
             tilingScheme: webMercator,
             maximumLevel: 21,
             credit: '© Google Earth Hybrid'
@@ -91,8 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         animation: false,
         navigationHelpButton: false,
         fullscreenButton: false,
-        skyAtmosphere: new Cesium.SkyAtmosphere(),
-        globe: new Cesium.Globe(Cesium.Ellipsoid.WGS84),
         requestRenderMode: false,
         maximumScreenSpaceError: 2
     });
@@ -103,10 +101,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const globe = viewer.scene.globe;
     const skyAtmosphere = viewer.scene.skyAtmosphere;
 
-    // Full uniform illumination like NASA Eyes on the Earth (100% full Earth, NO half-darkness!)
+    // Full uniform illumination like NASA Eyes on the Earth
     globe.enableLighting = false;
     globe.showGroundAtmosphere = true;
-    globe.baseColor = Cesium.Color.fromCssColorString('#020814');
+    globe.baseColor = Cesium.Color.fromCssColorString('#0b1a30');
     globe.atmosphereLightIntensity = 10.0;
 
     // Glowing NASA Black Marble city lights layer (only shown if Day/Night Shadow is explicitly enabled)
@@ -802,4 +800,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initial startup: Fly to whole Earth
     cameraController.flyTo('global');
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEarthPulseApp);
+} else {
+    initEarthPulseApp();
+}

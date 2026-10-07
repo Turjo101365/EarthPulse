@@ -12,6 +12,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <script>
+    window.onerror = function(msg, url, line, col, error) {
+        console.error('CLIENT ERROR:', msg, url, line, col, error);
+        fetch('/api/client-log', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({type: 'error', msg: String(msg), url: String(url), line, col, stack: error ? error.stack : ''})
+        }).catch(function(){});
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('CLIENT PROMISE REJECTION:', event.reason);
+        fetch('/api/client-log', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({type: 'unhandledrejection', reason: String(event.reason), stack: event.reason ? event.reason.stack : ''})
+        }).catch(function(){});
+    });
+    </script>
 </head>
 <body>
     <!-- 3D Earth Cesium Container -->

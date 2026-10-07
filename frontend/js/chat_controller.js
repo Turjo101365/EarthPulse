@@ -228,14 +228,14 @@ export class ChatController {
 
     addInitialGreeting() {
         const greeting = (
-            "👋 **Welcome to PulseAI Wildfire Copilot!**\n\n"
-            "I am grounded in live **NASA FIRMS** satellite feeds (MODIS & VIIRS), "
-            "**XGBoost** spatial spread predictions, and **PPO Reinforcement Learning** dispatch tactics.\n\n"
-            "Try asking me in **English**, **বাংলা** or **Banglish**:\n"
-            "- *'What is the current global fire summary?'*\n"
-            "- *'বাংলাদেশে আগুনের অবস্থা কী?'*\n"
-            "- *'Fly to California'* or *'আমাজনে যাও'*\n"
-            "- *'Explain MODIS vs VIIRS difference'*\n"
+            "👋 **Welcome to PulseAI Wildfire Copilot!**\n\n" +
+            "I am grounded in live **NASA FIRMS** satellite feeds (MODIS & VIIRS), " +
+            "**XGBoost** spatial spread predictions, and **PPO Reinforcement Learning** dispatch tactics.\n\n" +
+            "Try asking me in **English**, **বাংলা** or **Banglish**:\n" +
+            "- *'What is the current global fire summary?'*\n" +
+            "- *'বাংলাদেশে আগুনের অবস্থা কী?'*\n" +
+            "- *'Fly to California'* or *'আমাজনে যাও'*\n" +
+            "- *'Explain MODIS vs VIIRS difference'*\n" +
             "- *'Run Ridge Crisis Scenario'*"
         );
         this.appendMessage('assistant', greeting, null, {

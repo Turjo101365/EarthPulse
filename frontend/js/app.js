@@ -1,6 +1,7 @@
 import { FIRMSController } from './firms_controller.js';
 import { FireGuardController } from './fireguard_controller.js';
 import { ChatController } from './chat_controller.js';
+import { MediaPipeHandController } from './hand_tracking.js';
 
 /**
  * Main Application Orchestrator for Photorealistic 3D Earth
@@ -766,8 +767,17 @@ async function initEarthPulseApp() {
     // =========================================================================
     // 8. Initialize MediaPipe Hand Tracking Controller (DNA Project Engine)
     // =========================================================================
-    const handController = new window.MediaPipeHandController(viewer, cameraController);
-    window.handController = handController;
+    try {
+        const HandClass = (typeof MediaPipeHandController === 'function') ? MediaPipeHandController : window.MediaPipeHandController;
+        if (typeof HandClass === 'function') {
+            const handController = new HandClass(viewer, cameraController);
+            window.handController = handController;
+        } else {
+            console.warn('MediaPipeHandController is not available yet');
+        }
+    } catch (err) {
+        console.warn('Failed to initialize MediaPipeHandController:', err);
+    }
 
     // =========================================================================
     // 8b. Initialize FireGuard AI Mission Control & RL Dispatch Controller

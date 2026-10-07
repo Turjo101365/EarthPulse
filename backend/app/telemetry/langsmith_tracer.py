@@ -133,7 +133,7 @@ class LangSmithTracer:
                             "latency_ms": latency_ms,
                             "estimated_cost_usd": 0.00028,
                             "guardrail": "Strict anti-hallucination topological alignment",
-                            "agent": "FireGuard AI Tactical Commander"
+                            "agent": "EarthPulse 3D Tactical Commander"
                         }
                     },
                     tags=["EarthPulse3D", "Tactical-Copilot", "RL-Dispatch", "Anti-Hallucination"]

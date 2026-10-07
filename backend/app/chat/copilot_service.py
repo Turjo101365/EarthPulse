@@ -309,29 +309,27 @@ class CopilotService:
                 else:
                     return f"🛰️ **Sensor Filter Applied:** Displaying active detections exclusively from **{sens}**."
 
-        # 2. General Fire Summary / Status
-        if any(w in lower for w in ["summary", "status", "overview", "অবস্থা", "কেমন", "পরিস্থিতি", "কত", "সব"]):
+        # 2. Regional / Bangladesh Query
+        if any(w in lower for w in ["bangladesh", "dhaka", "chittagong", "sundarbans", "বাংলাদেশ", "চট্টগ্রাম", "সুন্দরবন"]):
+            bd_hotspots = [h for h in spatial_index.hotspots if 20.5 <= h.get("latitude", 0) <= 26.5 and 88.0 <= h.get("longitude", 0) <= 92.8]
+            count = len(bd_hotspots)
             if bengali:
                 return (
-                    f"🌍 **গ্লোবাল ওয়াইল্ডফায়ার মিশন কন্ট্রোল সারাংশ:**\n\n"
-                    f"- **সক্রিয় স্যাটেলাইট হটস্পট:** `{tot:,}` টি ডিটেকশন (MODIS: `{telemetry['modis_count']:,}` | VIIRS: `{telemetry['viirs_count']:,}`)\n"
-                    f"- **গড় অগ্নিকিরণ শক্তি (FRP):** `{avg_frp} MW`\n"
-                    f"- **সর্বোচ্চ FRP পিক:** `{max_frp} MW` (সবচেয়ে বিপজ্জনক আগুন)\n"
-                    f"- **আনুমানিক পোড়া অঞ্চল:** `{burned:,.1f} km²`\n"
-                    f"- **বায়ুমণ্ডলে কার্বন নিঃসরণ:** `{co2:.2f} Mt CO₂`\n"
-                    f"- **মোট থার্মাল এনার্জি:** `{telemetry['total_energy_gw']:.1f} GW`\n\n"
-                    f"💡 আপনি নির্দিষ্ট কোনো এলাকা (যেমন: *'Fly to California'* বা *'আমাজনে যাও'*) দেখতে চাইতে পারেন অথবা *'সবচেয়ে বড় আগুন দেখাও'* বলতে পারেন।"
+                    f"🇧🇩 **বাংলাদেশ ও সংলগ্ন অঞ্চলের অগ্নিকাণ্ড টেলিমেট্রি:**\n\n"
+                    f"- **শনাক্তকৃত হটস্পট সংখ্যা:** `{count}` টি\n"
+                    f"- **মূল উৎস:** কৃষি ফসল কাটার পর নাড়া পোড়ানো (Crop residue burning) এবং চট্টগ্রাম পার্বত্য অঞ্চলের (CHT) ঝুম চাষ এলাকা।\n"
+                    f"- **সুন্দরবন ম্যানগ্রোভ:** সংবেদনশীল সংরক্ষিত বনাঞ্চলের প্রান্তে কোনো বড় থার্মাল অ্যানোমালি থাকলে রিয়েল-টাইমে অ্যালার্ট জারি হয়।\n"
+                    f"- **সাধারণ FRP সীমা:** ১৫–৬০ MW (নিম্ন থেকে মাঝারি তীব্রতা)।\n\n"
+                    f"👉 গ্লোবে দেখতে বলুন: **'Fly to Bangladesh'** বা **'সুন্দরবনে যাও'**।"
                 )
             else:
                 return (
-                    f"🌍 **Planetary Wildfire Mission Control Summary:**\n\n"
-                    f"- **Active Satellite Hotspots:** `{tot:,}` detections (MODIS: `{telemetry['modis_count']:,}` | VIIRS: `{telemetry['viirs_count']:,}`)\n"
-                    f"- **Mean Fire Radiative Power (FRP):** `{avg_frp} MW`\n"
-                    f"- **Peak FRP Surge:** `{max_frp} MW` (Highest intensity fire)\n"
-                    f"- **Estimated Burned Area:** `{burned:,.1f} km²`\n"
-                    f"- **Atmospheric Carbon Released:** `{co2:.2f} Mt CO₂`\n"
-                    f"- **Radiative Thermal Output:** `{telemetry['total_energy_gw']:.1f} GW`\n\n"
-                    f"💡 Ask me to *'Fly to California'*, *'Show Amazon Basin'*, or *'Run Ridge Crisis Scenario'* for real-time 3D tactical actions."
+                    f"🇧🇩 **Bangladesh & Regional Fire Telemetry:**\n\n"
+                    f"- **Active Detections in Sector:** `{count}` hotspots\n"
+                    f"- **Primary Sources:** Seasonal agricultural residue clearing and localized shifting cultivation in Chittagong Hill Tracts (CHT).\n"
+                    f"- **Sundarbans Biosphere:** Continuous buffer monitoring for sensitive mangrove fringe protection.\n"
+                    f"- **Typical FRP Profile:** 15–60 MW (Low to Moderate severity).\n\n"
+                    f"👉 Say **'Fly to Bangladesh'** or **'Fly to Chittagong'** to inspect 3D terrain."
                 )
 
         # 3. Highest Fire / Peak Hotspot
@@ -360,28 +358,29 @@ class CopilotService:
                         f"👉 Say **'Fly to peak fire'** to center the Cesium camera on this hotspot."
                     )
 
-        # 4. Regional / Bangladesh Query
-        if any(w in lower for w in ["bangladesh", "dhaka", "chittagong", "sundarbans", "বাংলাদেশ", "চট্টগ্রাম", "সুন্দরবন"]):
-            # Find hotspots near Bangladesh (approx lat 20.5-26.5, lon 88.0-92.8)
-            bd_hotspots = [h for h in spatial_index.hotspots if 20.5 <= h.get("latitude", 0) <= 26.5 and 88.0 <= h.get("longitude", 0) <= 92.8]
-            count = len(bd_hotspots)
+        # 4. General Fire Summary / Status
+        if any(w in lower for w in ["summary", "status", "overview", "অবস্থা", "কেমন", "পরিস্থিতি", "কত", "সব"]):
             if bengali:
                 return (
-                    f"🇧🇩 **বাংলাদেশ ও সংলগ্ন অঞ্চলের অগ্নিকাণ্ড টেলিমেট্রি:**\n\n"
-                    f"- **শনাক্তকৃত হটস্পট সংখ্যা:** `{count}` টি\n"
-                    f"- **মূল উৎস:** কৃষি ফসল কাটার পর নাড়া পোড়ানো (Crop residue burning) এবং চট্টগ্রাম পার্বত্য অঞ্চলের (CHT) ঝুম চাষ এলাকা।\n"
-                    f"- **সুন্দরবন ম্যানগ্রোভ:** সংবেদনশীল সংরক্ষিত বনাঞ্চলের প্রান্তে কোনো বড় থার্মাল অ্যানোমালি থাকলে রিয়েল-টাইমে অ্যালার্ট জারি হয়।\n"
-                    f"- **সাধারণ FRP সীমা:** ১৫–৬০ MW (নিম্ন থেকে মাঝারি তীব্রতা)।\n\n"
-                    f"👉 গ্লোবে দেখতে বলুন: **'Fly to Bangladesh'** বা **'সুন্দরবনে যাও'**।"
+                    f"🌍 **গ্লোবাল ওয়াইল্ডফায়ার মিশন কন্ট্রোল সারাংশ:**\n\n"
+                    f"- **সক্রিয় স্যাটেলাইট হটস্পট:** `{tot:,}` টি ডিটেকশন (MODIS: `{telemetry['modis_count']:,}` | VIIRS: `{telemetry['viirs_count']:,}`)\n"
+                    f"- **গড় অগ্নিকিরণ শক্তি (FRP):** `{avg_frp} MW`\n"
+                    f"- **সর্বোচ্চ FRP পিক:** `{max_frp} MW` (সবচেয়ে বিপজ্জনক আগুন)\n"
+                    f"- **আনুমানিক পোড়া অঞ্চল:** `{burned:,.1f} km²`\n"
+                    f"- **বায়ুমণ্ডলে কার্বন নিঃসরণ:** `{co2:.2f} Mt CO₂`\n"
+                    f"- **মোট থার্মাল এনার্জি:** `{telemetry['total_energy_gw']:.1f} GW`\n\n"
+                    f"💡 আপনি নির্দিষ্ট কোনো এলাকা (যেমন: *'Fly to California'* বা *'আমাজনে যাও'*) দেখতে চাইতে পারেন অথবা *'সবচেয়ে বড় আগুন দেখাও'* বলতে পারেন।"
                 )
             else:
                 return (
-                    f"🇧🇩 **Bangladesh & Regional Fire Telemetry:**\n\n"
-                    f"- **Active Detections in Sector:** `{count}` hotspots\n"
-                    f"- **Primary Sources:** Seasonal agricultural residue clearing and localized shifting cultivation in Chittagong Hill Tracts (CHT).\n"
-                    f"- **Sundarbans Biosphere:** Continuous buffer monitoring for sensitive mangrove fringe protection.\n"
-                    f"- **Typical FRP Profile:** 15–60 MW (Low to Moderate severity).\n\n"
-                    f"👉 Say **'Fly to Bangladesh'** or **'Fly to Chittagong'** to inspect 3D terrain."
+                    f"🌍 **Planetary Wildfire Mission Control Summary:**\n\n"
+                    f"- **Active Satellite Hotspots:** `{tot:,}` detections (MODIS: `{telemetry['modis_count']:,}` | VIIRS: `{telemetry['viirs_count']:,}`)\n"
+                    f"- **Mean Fire Radiative Power (FRP):** `{avg_frp} MW`\n"
+                    f"- **Peak FRP Surge:** `{max_frp} MW` (Highest intensity fire)\n"
+                    f"- **Estimated Burned Area:** `{burned:,.1f} km²`\n"
+                    f"- **Atmospheric Carbon Released:** `{co2:.2f} Mt CO₂`\n"
+                    f"- **Radiative Thermal Output:** `{telemetry['total_energy_gw']:.1f} GW`\n\n"
+                    f"💡 Ask me to *'Fly to California'*, *'Show Amazon Basin'*, or *'Run Ridge Crisis Scenario'* for real-time 3D tactical actions."
                 )
 
         # 5. Technical Questions on Remote Sensing (MODIS vs VIIRS, H3, FRP)

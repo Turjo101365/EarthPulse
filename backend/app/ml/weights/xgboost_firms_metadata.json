@@ -1,0 +1,63 @@
+{
+  "status": "SUCCESS",
+  "timestamp_utc": "2026-10-07T04:58:37Z",
+  "hardware": {
+    "platform": "darwin",
+    "is_apple_silicon": true,
+    "mps_hardware_present": true,
+    "xgboost_mps_backend": false,
+    "xgboost_engine": "Apple Silicon ARM64 NEON multi-threaded CPU (tree_method='hist')",
+    "torch_mps_accelerator_ready": true
+  },
+  "dataset": {
+    "total_records": 29978,
+    "ingest_stats": {
+      "modis_count": 9978,
+      "viirs_snpp_count": 10000,
+      "viirs_noaa20_count": 10000,
+      "total": 29978
+    },
+    "train_samples": 22102,
+    "test_samples": 7876,
+    "spatial_blocks": 3905,
+    "positive_class_ratio": 0.1392
+  },
+  "hyperparameters": {
+    "n_estimators": 300,
+    "learning_rate": 0.05,
+    "max_depth": 6,
+    "scale_pos_weight": 6.18,
+    "tree_method": "hist",
+    "n_jobs": -1
+  },
+  "metrics": {
+    "pr_auc": 0.9999,
+    "roc_auc": 1.0,
+    "accuracy": 0.9983,
+    "f1_score": 0.9938,
+    "confusion_matrix": [
+      [
+        6813,
+        10
+      ],
+      [
+        3,
+        1050
+      ]
+    ],
+    "train_duration_sec": 0.8
+  },
+  "feature_importances": {
+    "frp": 0.5081,
+    "confidence": 0.2826,
+    "brightness": 0.0647,
+    "temp_diff": 0.0467,
+    "track": 0.0329,
+    "scan": 0.0311,
+    "bright_bg": 0.0148,
+    "sensor_code": 0.0076,
+    "is_day": 0.0066,
+    "latitude": 0.0026,
+    "longitude": 0.0023
+  }
+}

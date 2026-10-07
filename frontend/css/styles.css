@@ -1794,3 +1794,363 @@ input[type="range"]::-webkit-slider-thumb:hover {
     .camera-telemetry { display: none; }
     .firms-timeline-bar { width: 90%; }
 }
+
+/* =========================================================================
+   FireGuard AI Mission Control, Intel Architecture Modal & LangSmith Drawer
+   ========================================================================= */
+
+/* Header Action Buttons */
+.arch-btn, .crisis-scenario-btn, .langsmith-btn, .grafana-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.arch-btn {
+    background: rgba(74, 59, 198, 0.2);
+    border: 1px solid rgba(169, 183, 204, 0.4);
+    color: #c9c2ff;
+}
+.arch-btn:hover { background: rgba(74, 59, 198, 0.4); color: #ffffff; }
+
+.crisis-scenario-btn {
+    background: rgba(194, 65, 12, 0.25);
+    border: 1px solid #f97316;
+    color: #ffedd5;
+}
+.crisis-scenario-btn:hover, .crisis-scenario-btn.pulsing {
+    background: #ea580c;
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(234, 88, 12, 0.6);
+}
+
+.langsmith-btn {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid #10b981;
+    color: #a7f3d0;
+}
+.langsmith-btn:hover { background: #059669; color: #ffffff; }
+
+.grafana-link-btn {
+    background: rgba(249, 115, 22, 0.15);
+    border: 1px solid rgba(249, 115, 22, 0.5);
+    color: #fdba74;
+}
+.grafana-link-btn:hover { background: #f97316; color: #ffffff; }
+
+/* Real-time Telemetry Strip in HUD */
+.telemetry-strip {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.telem-pill {
+    flex: 1;
+    min-width: 70px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 6px 8px;
+    text-align: center;
+}
+.telem-pill .lbl {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+}
+.telem-pill .val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: #f97316;
+    display: block;
+    margin-top: 2px;
+}
+.telem-pill.rl .val { color: #10b981; }
+.telem-pill.blue .val { color: #38bdf8; }
+
+/* Interactive Architecture & Intel Modal */
+.fireguard-arch-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(94vw, 1100px);
+    max-height: 88vh;
+    background: #0f172a;
+    border: 1.5px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #f1f5f9;
+}
+.fireguard-arch-modal.hidden { display: none !important; }
+
+.arch-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px;
+    background: #1e293b;
+    border-bottom: 1px solid var(--border-medium);
+}
+.arch-modal-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.arch-modal-title h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+.arch-modal-title span {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: #f97316;
+    letter-spacing: 0.06em;
+}
+.arch-tabs-bar {
+    display: flex;
+    background: #090d16;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 6px 16px;
+    gap: 6px;
+    overflow-x: auto;
+}
+.arch-tab-btn {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+.arch-tab-btn:hover { color: #ffffff; background: rgba(255, 255, 255, 0.06); }
+.arch-tab-btn.active {
+    background: #f97316;
+    color: #ffffff;
+}
+
+.arch-modal-body {
+    padding: 22px;
+    overflow-y: auto;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+.arch-panel-content.hidden { display: none !important; }
+
+.arch-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.arch-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+@media (max-width: 800px) {
+    .arch-grid-3, .arch-grid-2 { grid-template-columns: 1fr; }
+}
+
+.arch-card {
+    background: #1e293b;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.arch-card.fire { border-color: rgba(249, 115, 22, 0.4); background: rgba(234, 88, 12, 0.08); }
+.arch-card.rl { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08); }
+.arch-card.grafana { border-color: rgba(249, 115, 22, 0.6); background: rgba(24, 27, 31, 0.9); }
+
+.arch-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    align-self: flex-start;
+}
+.arch-tag.fire { background: #ea580c; color: #fff; }
+.arch-tag.rl { background: #10b981; color: #fff; }
+.arch-tag.grafana { background: #f97316; color: #fff; }
+
+.arch-card h4 { margin: 0; font-size: 1rem; color: #fff; }
+.arch-card p { margin: 0; color: #cbd5e1; font-size: 0.78rem; }
+.arch-card code {
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #f97316;
+}
+
+.arch-code-box {
+    background: #090d16;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #e2e8f0;
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+.arch-table-wrap {
+    overflow-x: auto;
+    margin: 14px 0;
+}
+.arch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.76rem;
+}
+.arch-table th, .arch-table td {
+    border: 1px solid #334155;
+    padding: 8px 10px;
+    text-align: left;
+}
+.arch-table th { background: #1e293b; color: #f97316; font-weight: 700; }
+
+.arch-pitch-box {
+    margin-top: 18px;
+    background: rgba(234, 88, 12, 0.12);
+    border-left: 4px solid #ea580c;
+    border-radius: 6px;
+    padding: 14px 18px;
+}
+.arch-pitch-box h4 { margin: 0 0 6px; color: #f97316; font-size: 0.9rem; }
+.arch-pitch-box p { margin: 4px 0; color: #e2e8f0; font-size: 0.8rem; }
+
+/* LangSmith Copilot Audit Drawer */
+.langsmith-drawer {
+    position: fixed;
+    bottom: 24px;
+    right: 320px;
+    width: 440px;
+    max-height: 520px;
+    background: rgba(15, 23, 42, 0.96);
+    border: 1px solid #10b981;
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #f1f5f9;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.langsmith-drawer.collapsed {
+    transform: translateY(120%);
+    opacity: 0;
+    pointer-events: none;
+}
+.ls-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(16, 185, 129, 0.12);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+}
+.ls-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #a7f3d0;
+}
+.ls-body {
+    padding: 12px 14px;
+    overflow-y: auto;
+    font-size: 0.74rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.ls-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    color: #94a3b8;
+    font-size: 0.68rem;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 6px;
+}
+.ls-section-title {
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-top: 4px;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+}
+.ls-code {
+    background: #090d16;
+    border: 1px solid #1e293b;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: #e2e8f0;
+    max-height: 100px;
+    overflow-y: auto;
+}
+.ls-output {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid #10b981;
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #ecfdf5;
+    font-weight: 500;
+    line-height: 1.4;
+}
+.rl-unit-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 4px;
+}
+.rl-unit-item .unit-hdr {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+.unit-badge.AERIAL_RETARDANT { color: #38bdf8; }
+.unit-badge.GROUND_FIREBREAK { color: #f59e0b; }
+.unit-badge.CIVILIAN_EVACUATION { color: #10b981; }
+.rl-unit-item .unit-desc {
+    color: #94a3b8;
+    font-size: 0.65rem;
+    margin-top: 2px;
+}

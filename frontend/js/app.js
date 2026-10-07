@@ -1,4 +1,5 @@
 import { FIRMSController } from './firms_controller.js';
+import { FireGuardController } from './fireguard_controller.js';
 
 /**
  * Main Application Orchestrator for Photorealistic 3D Earth
@@ -768,6 +769,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =========================================================================
     const handController = new window.MediaPipeHandController(viewer, cameraController);
     window.handController = handController;
+
+    // =========================================================================
+    // 8b. Initialize FireGuard AI Mission Control & RL Dispatch Controller
+    // =========================================================================
+    const fireGuardController = new FireGuardController(viewer);
+    window.fireGuardController = fireGuardController;
 
     // =========================================================================
     // 9. Wire Up On-Screen Camera D-Pad & Flight Tour

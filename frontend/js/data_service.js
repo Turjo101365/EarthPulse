@@ -103,6 +103,88 @@ class DataService {
             return { google_earth_api_key: '' };
         }
     }
+
+    /**
+     * Harmonizer Pipeline Status
+     */
+    async fetchHarmonizerPipeline() {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/harmonizer/pipeline`);
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to fetch harmonizer pipeline:', err);
+            return null;
+        }
+    }
+
+    /**
+     * XGBoost 24-48h Spread Forecast
+     */
+    async fetchMLForecast(lat, lon, frp = 85.0, hoursAhead = 24) {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/ml/forecast?lat=${lat}&lon=${lon}&frp=${frp}&hours_ahead=${hoursAhead}`);
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to fetch ML forecast:', err);
+            return null;
+        }
+    }
+
+    /**
+     * RL PPO Resource Dispatch
+     */
+    async fetchRLDispatch(lat, lon, frp = 112.0, sector = 'Valley Sector B') {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/rl/dispatch?lat=${lat}&lon=${lon}&frp=${frp}&sector=${encodeURIComponent(sector)}`);
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to fetch RL dispatch:', err);
+            return null;
+        }
+    }
+
+    /**
+     * LangSmith Traces
+     */
+    async fetchLangSmithTraces() {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/telemetry/langsmith`);
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to fetch LangSmith traces:', err);
+            return null;
+        }
+    }
+
+    /**
+     * Real-time Mission Control Telemetry Stats
+     */
+    async fetchTelemetryStats() {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/telemetry/stats`);
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to fetch telemetry stats:', err);
+            return null;
+        }
+    }
+
+    /**
+     * Trigger Mountain Ridge Crisis Response Scenario
+     */
+    async triggerCrisisScenario() {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/scenario/crisis-response`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to trigger crisis scenario:', err);
+            return null;
+        }
+    }
 }
 
 window.dataService = new DataService();

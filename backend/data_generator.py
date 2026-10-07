@@ -1,10 +1,6 @@
 """
 Active Fire Hotspots Storage and Management (MODIS & VIIRS)
-
-This module maintains the in-memory store for active fire hotspot records.
-All hardcoded mock/synthetic generation logic has been removed.
-Real satellite observations from MODIS and VIIRS will be harmonized
-and loaded here according to user harmonization specifications.
+Populated dynamically by the Dual-Sensor Harmonization Pipeline.
 """
 
 from typing import List, Dict, Any
@@ -12,8 +8,27 @@ from typing import List, Dict, Any
 # In-memory store for active fire hotspot detections
 ALL_HOTSPOTS: List[Dict[str, Any]] = []
 
+def initialize_harmonized_hotspots() -> List[Dict[str, Any]]:
+    """
+    Executes the 5-node harmonization pipeline across multi-sensor observations
+    to seed the initial active fire catalog.
+    """
+    global ALL_HOTSPOTS
+    try:
+        from .app.harmonizer import HarmonizationPipeline, get_real_satellite_detections
+        modis, viirs = get_real_satellite_detections(limit_per_sensor=1500)
+        pipeline = HarmonizationPipeline()
+        state = pipeline.run(modis, viirs)
+        ALL_HOTSPOTS = state.postgis_record
+    except Exception as e:
+        print(f"Notice: Harmonization startup seeding error ({e})")
+        ALL_HOTSPOTS = []
+    return ALL_HOTSPOTS
+
 def get_all_hotspots() -> List[Dict[str, Any]]:
     """Returns the current list of active hotspots."""
+    if not ALL_HOTSPOTS:
+        initialize_harmonized_hotspots()
     return ALL_HOTSPOTS
 
 def set_all_hotspots(hotspots: List[Dict[str, Any]]) -> None:
@@ -30,3 +45,6 @@ def clear_all_hotspots() -> None:
     """Clears all hotspot records."""
     global ALL_HOTSPOTS
     ALL_HOTSPOTS.clear()
+
+# Initialize upon import
+initialize_harmonized_hotspots()

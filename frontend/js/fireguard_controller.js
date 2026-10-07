@@ -96,6 +96,23 @@ export class FireGuardController {
             });
         }
 
+        const btnEmitTest = document.getElementById('btn-ls-test-emit');
+        if (btnEmitTest) {
+            btnEmitTest.addEventListener('click', async () => {
+                btnEmitTest.textContent = 'Emitting...';
+                btnEmitTest.disabled = true;
+                const result = await window.dataService.emitTestLangSmithTrace();
+                if (result && result.trace) {
+                    this.displayLangSmithTrace(result.trace, null);
+                }
+                btnEmitTest.textContent = 'Emitted! ⚡';
+                setTimeout(() => {
+                    btnEmitTest.textContent = 'Emit Trace ⚡';
+                    btnEmitTest.disabled = false;
+                }, 2000);
+            });
+        }
+
         // Layer Toggles
         const toggleSpread = document.getElementById('toggle-xgboost-spread');
         if (toggleSpread) {
@@ -313,6 +330,20 @@ export class FireGuardController {
 
         const elGuardrail = document.getElementById('ls-guardrail-status');
         if (elGuardrail) elGuardrail.textContent = `${trace.hallucination_check.status} (${trace.hallucination_check.facts_grounded_pct})`;
+
+        const elCloudStatus = document.getElementById('ls-cloud-status');
+        if (elCloudStatus) {
+            if (trace.cloud_synced) {
+                elCloudStatus.textContent = 'Live Synced 🟢';
+                elCloudStatus.style.color = '#10b981';
+            } else if (trace.sync_error) {
+                elCloudStatus.textContent = 'Sync Error ⚠️';
+                elCloudStatus.style.color = '#f59e0b';
+            } else {
+                elCloudStatus.textContent = 'Local Trace 🟡';
+                elCloudStatus.style.color = '#94a3b8';
+            }
+        }
 
         // Populate unit action list
         const unitList = document.getElementById('ls-units-dispatched-list');

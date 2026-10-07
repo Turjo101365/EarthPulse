@@ -156,6 +156,19 @@ class DataService {
         }
     }
 
+    async emitTestLangSmithTrace() {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/telemetry/langsmith/test`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to emit test LangSmith trace:', err);
+            return null;
+        }
+    }
+
     /**
      * Real-time Mission Control Telemetry Stats
      */

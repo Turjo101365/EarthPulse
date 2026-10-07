@@ -284,7 +284,7 @@ class UIController {
                             <span class="search-item-sub">${(loc.continent || loc.country || loc.type || 'GLOBAL').toUpperCase()}</span>
                         </div>
                         <span class="search-item-badge ${loc.isLive ? 'live' : 'country'}">${loc.isLive ? 'LIVE' : 'ATLAS'}</span>
-                        <span class="search-item-arrow">✈️</span>
+                        <span class="search-item-arrow">→</span>
                     </div>
                 `).join('');
 

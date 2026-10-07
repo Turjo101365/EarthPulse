@@ -244,7 +244,7 @@ export class MediaPipeHandController {
             this.isActive = true;
             this.hud.classList.remove('hidden');
             this.toggleBtn.classList.add('active');
-            this.toggleBtn.innerHTML = '<span>⏹️</span> Stop Hand Tracking';
+            this.toggleBtn.innerHTML = '<span>■</span> Stop Gesture Control';
             if (this.statusText) this.statusText.textContent = "Show your hand to control Earth";
 
             this._processLoop();
@@ -270,7 +270,7 @@ export class MediaPipeHandController {
         if (this.hud) this.hud.classList.add('hidden');
         if (this.toggleBtn) {
             this.toggleBtn.classList.remove('active');
-            this.toggleBtn.innerHTML = '<span>🖐️</span> Hand Tracking (DNA Mode)';
+            this.toggleBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 4h-1.5l-1.5-2h-8L6.5 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg><span>Vision Gesture Control</span>';
         }
         this.lastPalmCenter = null;
         this.lastPinchDist = null;
@@ -310,10 +310,10 @@ export class MediaPipeHandController {
         const h = this.canvas.height;
 
         // Draw connections (mirrored horizontally)
-        ctx.strokeStyle = '#00e5ff';
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = '#00e5ff';
-        ctx.shadowBlur = 6;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.4)';
+        ctx.shadowBlur = 4;
 
         for (const [startIdx, endIdx] of HAND_CONNECTIONS) {
             const p1 = landmarks[startIdx];
@@ -327,14 +327,14 @@ export class MediaPipeHandController {
         ctx.shadowBlur = 0;
 
         // Draw joint landmarks
-        ctx.fillStyle = '#00e676';
+        ctx.fillStyle = '#f97316';
         for (let i = 0; i < landmarks.length; i++) {
             const p = landmarks[i];
             const x = (1 - p.x) * w;
             const y = p.y * h;
 
             ctx.beginPath();
-            ctx.arc(x, y, i === 8 || i === 4 ? 5 : 3.5, 0, Math.PI * 2);
+            ctx.arc(x, y, i === 8 || i === 4 ? 4 : 3, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -350,27 +350,27 @@ export class MediaPipeHandController {
 
             switch (gesture) {
                 case GESTURES.OPEN_PALM:
-                    label = "🖐️ OPEN PALM • ROTATING EARTH";
+                    label = "ROTATING (OPEN PALM)";
                     cssClass = "palm";
                     break;
                 case GESTURES.PINCH:
-                    label = "🤏 PINCH • ZOOMING";
+                    label = "ZOOMING (PINCH)";
                     cssClass = "pinch";
                     break;
                 case GESTURES.FIST:
-                    label = "✊ FIST • ROTATION LOCKED";
+                    label = "LOCKED (FIST)";
                     cssClass = "fist";
                     break;
                 case GESTURES.THUMBS_UP:
-                    label = "👍 THUMBS UP • RESET EARTH";
+                    label = "RESET OVERVIEW (THUMB)";
                     cssClass = "thumb";
                     break;
                 case GESTURES.PEACE:
-                    label = "✌️ PEACE • FLY TO BANGLADESH";
+                    label = "TARGET BANGLADESH (PEACE)";
                     cssClass = "peace";
                     break;
                 case GESTURES.POINT:
-                    label = "☝️ POINT • INSPECTING";
+                    label = "INSPECTING (POINT)";
                     cssClass = "point";
                     break;
             }

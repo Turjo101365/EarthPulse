@@ -332,7 +332,7 @@ export class FIRMSController {
                 <div class="cr-right">
                     <span class="cr-count">${c.count.toLocaleString()} fires</span>
                     <span class="cr-burned">${c.burned_area_sqkm.toLocaleString()} km²</span>
-                    <button class="cr-fly-btn" title="Fly to ${c.country}">✈️</button>
+                    <button class="cr-fly-btn" title="Fly to ${c.country}">Fly</button>
                 </div>
             `;
 

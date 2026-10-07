@@ -1286,7 +1286,7 @@ fireguard_query_latency_ms 0.0</pre>
                 </div>
             </div>
             <div class="chat-header-actions">
-                <span id="chat-status-pill" class="chat-engine-pill">Built-in AI</span>
+                <span id="chat-status-pill" class="chat-engine-pill">NASA RAG AI</span>
                 <button id="btn-chatbot-settings" class="chat-btn-icon" title="AI Engine & API Key Settings">⚙️</button>
                 <button id="btn-minimize-chatbot" class="chat-btn-icon" title="Minimize Chat">_</button>
                 <button id="btn-close-chatbot" class="chat-btn-icon" title="Close Chat">&times;</button>
@@ -1344,28 +1344,19 @@ fireguard_query_latency_ms 0.0</pre>
                 <button id="btn-close-chat-settings" class="drawer-close-btn">&times;</button>
             </div>
             <div class="settings-body">
-                <div class="setting-item">
-                    <label for="chat-setting-provider">AI Reasoning Provider</label>
-                    <select id="chat-setting-provider" class="hud-dropdown">
-                        <option value="builtin">Built-in Mission Control AI (Instant, Zero Config, Multilingual)</option>
-                        <option value="gemini">Google Gemini 2.5 / 1.5 Flash (Cloud LLM)</option>
-                        <option value="openai">OpenAI GPT-4o-mini (Cloud LLM)</option>
-                    </select>
-                    <span class="setting-hint">The Built-in engine requires zero keys and is deeply grounded in real-time telemetry.</span>
-                </div>
-                <div class="setting-item" id="chat-key-group" style="display:none;">
-                    <label for="chat-setting-apikey">Custom API Key</label>
-                    <input type="password" id="chat-setting-apikey" placeholder="Enter Gemini (AIza...) or OpenAI (sk-...) Key" class="settings-input">
-                    <span class="setting-hint">Key is saved securely in your browser's local storage and used only for your queries.</span>
-                </div>
-                <div class="settings-status-box">
-                    <div class="stat-line"><span>RAG Knowledge Base:</span> <strong>9 Curated Technical Modules Indexed</strong></div>
-                    <div class="stat-line"><span>Supported Languages:</span> <strong>English, Bengali (বাংলা), Banglish</strong></div>
+                <div class="settings-status-box" style="margin-top:0;">
+                    <div class="stat-line"><span>Vector Database:</span> <strong style="color:#38bdf8;">PostgreSQL + pgvector (1536-dim)</strong></div>
+                    <div class="stat-line"><span>RAG Knowledge Base:</span> <strong>17 NASA Technical Modules Indexed</strong></div>
+                    <div class="stat-line"><span>Security Mode:</span> <strong style="color:#10b981;">Server-Side Protected (.env)</strong></div>
                     <div class="stat-line"><span>LangSmith Audit:</span> <strong style="color:#10b981;">Active Tracing & Anti-Hallucination</strong></div>
+                    <div class="stat-line"><span>Supported Languages:</span> <strong>English, Bengali (বাংলা), Banglish</strong></div>
+                </div>
+                <div style="font-size:0.7rem; color:#94a3b8; line-height:1.45; margin-top:10px;">
+                    🔒 <strong>Security Policy:</strong> API keys are strictly managed on the secure backend server and are never exposed to browser client code.
                 </div>
             </div>
             <div class="settings-footer">
-                <button id="btn-save-chat-settings" class="btn-primary">Save & Apply</button>
+                <button id="btn-close-chat-settings-footer" class="btn-primary" onclick="document.getElementById('chat-settings-modal').classList.add('hidden')">Close</button>
             </div>
         </div>
     </div>

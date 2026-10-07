@@ -31,6 +31,7 @@ from .app.rl import rl_dispatcher
 from .app.telemetry import metrics_manager, langsmith_tracer
 from .app.rag import rag_retriever
 from .app.chat import copilot_service
+from .db import db_manager
 
 app = FastAPI(
     title="FireGuard AI: NASA Multi-Sensor Wildfire Mission Control",
@@ -51,6 +52,56 @@ FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fr
 
 # Active WebSocket client connections
 active_websockets: List[WebSocket] = []
+
+@app.on_event("startup")
+async def startup_db_connection():
+    """Initializes PostgreSQL connection and attempts initial sync if active."""
+    try:
+        connected = db_manager.connect()
+        if connected:
+            print("PostgreSQL connection established successfully.")
+            spots = get_all_hotspots()
+            if spots:
+                db_manager.sync_hotspots(spots)
+        else:
+            print("Notice: PostgreSQL not connected (running in in-memory mode).")
+
+        # Verify pgvector document store
+        from .app.db.postgres import db_manager as pg_db
+        if pg_db.get_document_count() == 0:
+            print("Notice: RAG documents empty in DB. Ingesting knowledge base...")
+            from .app.rag.ingest import ingestion_pipeline
+            ingestion_pipeline.ingest_all_knowledge()
+    except Exception as e:
+        print(f"Notice: DB startup skipped ({e})")
+
+# =========================================================================
+# 0. PostgreSQL & pgvector Database Endpoints
+# =========================================================================
+@app.get("/api/db/status")
+async def get_db_status():
+    """Returns PostgreSQL connection health, table counts, and pgvector state."""
+    return db_manager.get_stats()
+
+@app.post("/api/db/sync")
+async def sync_hotspots_to_db():
+    """Persists active in-memory FIRMS satellite detections to PostgreSQL."""
+    spots = get_all_hotspots()
+    count = db_manager.sync_hotspots(spots)
+    return {"status": "SUCCESS", "synced_count": count, "stats": db_manager.get_stats()}
+
+@app.get("/api/db/hotspots")
+async def query_db_hotspots(
+    north: float = Query(90.0),
+    south: float = Query(-90.0),
+    east: float = Query(180.0),
+    west: float = Query(-180.0),
+    min_frp: float = Query(0.0),
+    limit: int = Query(2000)
+):
+    """Direct SQL spatial bounding-box query from PostgreSQL."""
+    results = db_manager.query_bbox(north, south, east, west, min_frp, limit)
+    return {"count": len(results), "hotspots": results}
 
 # =========================================================================
 # 1. Prometheus Telemetry Exposition Endpoint
@@ -435,9 +486,11 @@ async def client_log_endpoint(payload: Dict[str, Any]):
 
 class ChatMessagePayload(BaseModel):
     message: str
+    conversationId: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
     history: Optional[List[Dict[str, str]]] = None
     viewport: Optional[Dict[str, Any]] = None
-    provider: Optional[str] = "builtin"
+    provider: Optional[str] = None
     api_key: Optional[str] = None
     model: Optional[str] = None
 
@@ -445,18 +498,42 @@ class ChatMessagePayload(BaseModel):
 async def chat_with_copilot(payload: ChatMessagePayload):
     """
     Primary AI Copilot conversational endpoint.
-    Performs RAG knowledge retrieval, grounds on real-time spatial telemetry,
-    determines interactive actions (fly-to, scenario trigger), and logs LangSmith traces.
+    Performs RAG knowledge retrieval from PostgreSQL + pgvector,
+    grounds on real-time spatial telemetry & ML predictions,
+    preserves session conversation history, and returns structured sources.
     """
+    if not payload.message or not payload.message.strip():
+        raise HTTPException(status_code=400, detail="User message cannot be empty.")
+
+    ctx = payload.context or payload.viewport
     response = copilot_service.query(
         message=payload.message,
-        history=payload.history,
-        viewport=payload.viewport,
-        provider=payload.provider or "builtin",
-        api_key=payload.api_key,
-        model=payload.model
+        conversation_id=payload.conversationId,
+        context=ctx,
+        model_override=payload.model
     )
+    # Ensure backward compatibility for frontend checks
+    response["reply"] = response["answer"]
     return response
+
+@app.get("/api/chat/history/{conversation_id}")
+async def get_chat_history_endpoint(conversation_id: str):
+    """Retrieves session message history from database."""
+    messages = db_manager.get_conversation_history(conversation_id)
+    return {"conversationId": conversation_id, "messages": messages}
+
+@app.delete("/api/chat/history/{conversation_id}")
+async def clear_chat_history_endpoint(conversation_id: str):
+    """Clears message history for a conversation session."""
+    db_manager.clear_conversation_history(conversation_id)
+    return {"status": "cleared", "conversationId": conversation_id}
+
+@app.post("/api/rag/ingest")
+async def trigger_rag_ingestion_endpoint():
+    """Triggers on-demand re-ingestion of the knowledge base into PostgreSQL."""
+    from .app.rag.ingest import ingestion_pipeline
+    result = ingestion_pipeline.ingest_all_knowledge()
+    return result
 
 @app.get("/api/chat/suggestions")
 async def get_chat_suggestions():
@@ -474,6 +551,7 @@ async def get_chat_suggestions():
         {"icon": "⚡", "label": "Ridge Crisis Scenario", "prompt": "Run the mountain ridge wildfire crisis scenario"},
         {"icon": "🛰️", "label": "MODIS vs VIIRS RAG", "prompt": "Explain the difference between MODIS and VIIRS sensor resolution and why we harmonize them"},
         {"icon": "🇧🇩", "label": "Bangladesh Telemetry", "prompt": "বাংলাদেশে আগুনের অবস্থা কী এবং সুন্দরবন সুরক্ষিত আছে কি?"},
+        {"icon": "🌐", "label": "Web Search News", "prompt": "Search web for latest NASA wildfire news"},
         {"icon": "🌲", "label": "PPO RL Tactics", "prompt": "How does the PPO agent allocate Air Tankers and cut firelines?"},
     ]
     return {"suggestions": suggestions}
@@ -483,13 +561,15 @@ async def get_chat_status():
     """
     Reports AI Copilot status, active providers, RAG corpus size, and LangSmith observability.
     """
+    from .app.rag.rag_service import rag_service
+    from .app.db.postgres import db_manager as pg_db
     return {
         "status": "ONLINE",
-        "rag_documents_indexed": len(rag_retriever.documents),
+        "rag_documents_indexed": pg_db.get_document_count(),
+        "vector_database": "PostgreSQL + pgvector (1536-dim)" if pg_db.vector_enabled else "SQLite Fallback",
         "providers": {
-            "builtin": {"available": True, "description": "Built-in Mission Control AI (Instant, Zero-Config, Multilingual)"},
-            "gemini": {"available": bool(os.getenv("GEMINI_API_KEY")), "description": "Google Gemini 2.5 / 1.5 Flash"},
-            "openai": {"available": bool(os.getenv("OPENAI_API_KEY")), "description": "OpenAI GPT-4o-mini"}
+            "openai": {"available": bool(os.getenv("OPENAI_API_KEY")), "description": "OpenAI GPT-4o-mini & Text-Embedding-3-Small"},
+            "rag_grounded": {"available": True, "description": "Grounded Multi-Sensor Domain RAG Engine"}
         },
         "langsmith_tracing": os.getenv("LANGSMITH_TRACING", "false").lower() == "true",
         "supported_languages": ["en", "bn", "banglish"]
@@ -498,13 +578,14 @@ async def get_chat_status():
 @app.get("/api/rag/search")
 async def search_rag_knowledge(
     q: str = Query(..., min_length=2, description="Search query across remote sensing knowledge base"),
-    top_k: int = Query(3, ge=1, le=10, description="Number of knowledge chunks to retrieve")
+    top_k: int = Query(5, ge=1, le=10, description="Number of knowledge chunks to retrieve")
 ):
     """
-    Direct RAG knowledge base search endpoint.
-    Retrieves vectorized documentation chunks on NASA FIRMS, ML spatial splits, PPO RL, and ICS playbooks.
+    Direct RAG knowledge base search endpoint using pgvector cosine similarity.
+    Retrieves vectorized documentation chunks on NASA FIRMS, ML spatial splits, and sensor specs.
     """
-    chunks = rag_retriever.retrieve(query=q, top_k=top_k)
+    from .app.rag.rag_service import rag_service
+    chunks = rag_service.retrieve_relevant_documents(query=q, top_k=top_k)
     return {
         "query": q,
         "count": len(chunks),

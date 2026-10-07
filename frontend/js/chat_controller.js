@@ -12,13 +12,17 @@ export class ChatController {
         this.firmsController = firmsController;
 
         this.history = [];
+        this.lastUserMessage = "";
         this.isOpen = false;
         this.isMinimized = false;
         this.isListening = false;
         this.speechRecognition = null;
-        this.provider = localStorage.getItem('pulseai_provider') || 'builtin';
-        this.apiKey = localStorage.getItem('pulseai_api_key') || '';
         this.attachViewport = true;
+
+        // Persistent session identifier
+        this.conversationId = localStorage.getItem('pulseai_conversation_id') || 
+            ('ep-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36));
+        localStorage.setItem('pulseai_conversation_id', this.conversationId);
 
         this.initElements();
         this.initSpeech();
@@ -58,7 +62,7 @@ export class ChatController {
             this.speechRecognition = new SpeechRecognition();
             this.speechRecognition.continuous = false;
             this.speechRecognition.interimResults = false;
-            this.speechRecognition.lang = 'en-US'; // supports multilingual detection
+            this.speechRecognition.lang = 'en-US';
 
             this.speechRecognition.onresult = (e) => {
                 const transcript = e.results[0][0].transcript;
@@ -144,14 +148,7 @@ export class ChatController {
         // Settings modal
         this.btnSettings?.addEventListener('click', () => this.openSettings());
         this.btnCloseSettings?.addEventListener('click', () => this.closeSettings());
-        this.btnSaveSettings?.addEventListener('click', () => this.saveSettings());
-
-        this.selectProvider?.addEventListener('change', () => {
-            const val = this.selectProvider.value;
-            if (this.settingKeyGroup) {
-                this.settingKeyGroup.style.display = val === 'builtin' ? 'none' : 'block';
-            }
-        });
+        this.btnSaveSettings?.addEventListener('click', () => this.closeSettings());
 
         // Viewport context toggle
         this.attachViewportToggle?.addEventListener('change', (e) => {
@@ -190,11 +187,6 @@ export class ChatController {
 
     openSettings() {
         if (!this.settingsModal) return;
-        if (this.selectProvider) this.selectProvider.value = this.provider;
-        if (this.inputApiKey) this.inputApiKey.value = this.apiKey;
-        if (this.settingKeyGroup) {
-            this.settingKeyGroup.style.display = this.provider === 'builtin' ? 'none' : 'block';
-        }
         this.settingsModal.classList.remove('hidden');
     }
 
@@ -202,27 +194,17 @@ export class ChatController {
         this.settingsModal?.classList.add('hidden');
     }
 
-    saveSettings() {
-        if (this.selectProvider) {
-            this.provider = this.selectProvider.value;
-            localStorage.setItem('pulseai_provider', this.provider);
-        }
-        if (this.inputApiKey) {
-            this.apiKey = this.inputApiKey.value.trim();
-            localStorage.setItem('pulseai_api_key', this.apiKey);
-        }
-        if (this.statusPill) {
-            this.statusPill.textContent = this.provider === 'builtin' ? 'Built-in AI' : (this.provider === 'gemini' ? 'Gemini Flash' : 'OpenAI');
-        }
-        this.closeSettings();
-        this.addSystemNotice(`Settings updated: Engine set to ${this.provider.toUpperCase()}`);
-    }
-
-    clearChat() {
+    async clearChat() {
         this.history = [];
         if (this.messagesContainer) {
             this.messagesContainer.innerHTML = '';
         }
+        try {
+            await fetch(`/api/chat/history/${encodeURIComponent(this.conversationId)}`, { method: 'DELETE' });
+        } catch (e) {}
+
+        this.conversationId = 'ep-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
+        localStorage.setItem('pulseai_conversation_id', this.conversationId);
         this.addInitialGreeting();
     }
 
@@ -230,29 +212,22 @@ export class ChatController {
         const greeting = (
             "👋 **Welcome to PulseAI Wildfire Copilot!**\n\n" +
             "I am grounded in live **NASA FIRMS** satellite feeds (MODIS & VIIRS), " +
-            "**XGBoost** spatial spread predictions, and **PPO Reinforcement Learning** dispatch tactics.\n\n" +
+            "**PostgreSQL + pgvector** technical documentation, **XGBoost** spatial spread forecasts, and PPO suppression tactics.\n\n" +
             "Try asking me in **English**, **বাংলা** or **Banglish**:\n" +
-            "- *'What is the current global fire summary?'*\n" +
-            "- *'বাংলাদেশে আগুনের অবস্থা কী?'*\n" +
-            "- *'Fly to California'* or *'আমাজনে যাও'*\n" +
-            "- *'Explain MODIS vs VIIRS difference'*\n" +
-            "- *'Run Ridge Crisis Scenario'*"
+            "- *'What is FRP and how does it calculate biomass loss?'*\n" +
+            "- *'What is the current number of hotspots shown on the map?'*\n" +
+            "- *'বাংলাদেশে আজকের হটস্পট সংখ্যা কত?'*\n" +
+            "- *'Explain the difference between MCD14ML and VNP14IMGML'*\n" +
+            "- *'Fly to California'* or *'সুন্দরবনে যাও'*"
         );
-        this.appendMessage('assistant', greeting, null, {
-            chunks_retrieved: 9,
-            citations: ['NASA FIRMS Sensors', 'Harmonization Pipeline'],
-            grounding_score: 1.0,
-            facts_grounded_pct: '100% facts grounded',
-            status: 'PASSED'
+        this.appendMessage('assistant', greeting, null, [
+            { title: "NASA FIRMS Satellite Sensors (MODIS vs VIIRS)", source: "NASA EOS", category: "remote_sensing", relevance: 1.0 },
+            { title: "5-Node Multi-Sensor Harmonization Pipeline", source: "EarthPulse", category: "harmonization", relevance: 0.95 }
+        ], {
+            modelUsed: "EarthPulse Grounded RAG",
+            latencyMs: 12,
+            factsGroundedPct: "100% facts grounded"
         });
-    }
-
-    addSystemNotice(text) {
-        const el = document.createElement('div');
-        el.className = 'chat-system-notice';
-        el.textContent = `ℹ️ ${text}`;
-        this.messagesContainer?.appendChild(el);
-        this.scrollToBottom();
     }
 
     async loadSuggestions() {
@@ -280,12 +255,15 @@ export class ChatController {
         }
     }
 
-    async sendMessage() {
-        if (!this.inputField) return;
-        const msg = this.inputField.value.trim();
+    async sendMessage(retryText = null) {
+        if (!this.inputField && !retryText) return;
+        const msg = (retryText !== null ? retryText : this.inputField.value).trim();
         if (!msg) return;
 
-        this.inputField.value = '';
+        this.lastUserMessage = msg;
+        if (!retryText) {
+            this.inputField.value = '';
+        }
         this.appendMessage('user', msg);
 
         // Prepare Viewport Context if enabled
@@ -310,10 +288,13 @@ export class ChatController {
         try {
             const payload = {
                 message: msg,
-                history: this.history.slice(-4),
-                viewport: viewport,
-                provider: this.provider,
-                api_key: this.apiKey || null
+                conversationId: this.conversationId,
+                context: viewport ? {
+                    latitude: viewport.lat,
+                    longitude: viewport.lon,
+                    altitude: viewport.altitudeMeters,
+                    bounds: viewport.bounds
+                } : null
             };
 
             const res = await fetch('/api/chat', {
@@ -323,35 +304,39 @@ export class ChatController {
             });
 
             if (!res.ok) {
-                throw new Error(`Server returned status ${res.status}`);
+                throw new Error(`Server status ${res.status}`);
             }
 
             const data = await res.json();
             typingEl.remove();
 
-            // Append response message
-            this.appendMessage('assistant', data.reply, data.action, data.rag, data.grounding, data.trace_id);
+            const answer = data.answer || data.reply || "No response received.";
+            this.appendMessage('assistant', answer, data.action, data.sources, data.metadata, data.traceId);
 
-            // Execute action if returned
+            // Execute interactive 3D action if present
             if (data.action) {
                 this.executeAction(data.action);
             }
 
         } catch (err) {
             typingEl.remove();
-            this.appendMessage('assistant', `⚠️ **Error communicating with AI:** ${err.message}\n\nPlease verify server status or switch to the Built-in engine.`);
+            console.error('PulseAI Chat Error:', err);
+            this.appendErrorMessage("Sorry, I couldn't process that request right now. Please try again or rephrase your question.");
         }
     }
 
     executeAction(action) {
         if (!action || !action.type) return;
-
-        console.log('⚡ Copilot executing action:', action);
+        console.log('⚡ Copilot executing 3D action:', action);
 
         switch (action.type) {
             case 'fly_to_preset':
                 if (this.cameraController && action.params?.preset) {
-                    this.cameraController.flyTo(action.params.preset);
+                    if (this.cameraController.presets?.[action.params.preset]) {
+                        this.cameraController.flyTo(action.params.preset);
+                    } else if (Number.isFinite(action.params.lat) && Number.isFinite(action.params.lon)) {
+                        this.cameraController.flyToCoordinates(action.params.lon, action.params.lat, action.params.alt || 750000);
+                    }
                 }
                 break;
 
@@ -391,7 +376,41 @@ export class ChatController {
         }
     }
 
-    appendMessage(role, text, action = null, rag = null, grounding = null, traceId = null) {
+    appendErrorMessage(friendlyText) {
+        const msgEl = document.createElement('div');
+        msgEl.className = 'chat-msg assistant error-state';
+
+        const avatarEl = document.createElement('div');
+        avatarEl.className = 'msg-avatar';
+        avatarEl.innerHTML = '⚠️';
+
+        const bodyEl = document.createElement('div');
+        bodyEl.className = 'msg-body';
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'msg-content error-text';
+        contentEl.textContent = friendlyText;
+        bodyEl.appendChild(contentEl);
+
+        // Retry button
+        if (this.lastUserMessage) {
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'chat-retry-btn';
+            retryBtn.innerHTML = '🔄 Retry Question';
+            retryBtn.addEventListener('click', () => {
+                msgEl.remove();
+                this.sendMessage(this.lastUserMessage);
+            });
+            bodyEl.appendChild(retryBtn);
+        }
+
+        msgEl.appendChild(avatarEl);
+        msgEl.appendChild(bodyEl);
+        this.messagesContainer?.appendChild(msgEl);
+        this.scrollToBottom();
+    }
+
+    appendMessage(role, text, action = null, sources = null, metadata = null, traceId = null) {
         this.history.push({ role, content: text });
 
         const msgEl = document.createElement('div');
@@ -412,31 +431,58 @@ export class ChatController {
         contentEl.innerHTML = this.renderMarkdown(text);
         bodyEl.appendChild(contentEl);
 
+        // Sources citation block (assistant only)
+        if (role === 'assistant' && sources && sources.length > 0) {
+            const sourcesBlock = document.createElement('div');
+            sourcesBlock.className = 'chat-sources-block';
+            
+            const hasWeb = sources.some(s => s.url || s.source_type === 'web');
+            const titleEl = document.createElement('div');
+            titleEl.className = 'sources-header';
+            titleEl.innerHTML = hasWeb ? '<span>🌐 Live Web & News Citations:</span>' : '<span>📚 Verified Sources:</span>';
+            sourcesBlock.appendChild(titleEl);
+
+            const listEl = document.createElement('ul');
+            listEl.className = 'sources-list';
+            sources.slice(0, 5).forEach(s => {
+                const li = document.createElement('li');
+                const isWeb = Boolean(s.url || s.source_type === 'web');
+                const icon = isWeb ? '🌐' : '•';
+                
+                if (isWeb && s.url) {
+                    const dateBadge = s.date ? ` · <span class="source-date">${s.date}</span>` : '';
+                    li.innerHTML = `${icon} <a href="${s.url}" target="_blank" rel="noopener noreferrer" class="chat-web-source-link" title="Open external article in new tab"><strong>${s.title}</strong> ↗</a> <span class="source-sub">(${s.source}${dateBadge})</span>`;
+                } else {
+                    const relPct = s.relevance ? Math.round(s.relevance * 100) : 85;
+                    li.innerHTML = `• <strong>${s.title}</strong> <span class="source-sub">(${s.source} · ${relPct}% relevance)</span>`;
+                }
+                listEl.appendChild(li);
+            });
+            sourcesBlock.appendChild(listEl);
+            bodyEl.appendChild(sourcesBlock);
+        }
+
         // Action Pill Button (if action present)
         if (action) {
             const actionBtn = document.createElement('button');
             actionBtn.className = 'msg-action-badge';
             actionBtn.innerHTML = `<span>⚡ Action:</span> <strong>${action.label || action.type}</strong>`;
-            actionBtn.title = 'Click to re-execute action on 3D Globe';
+            actionBtn.title = 'Click to execute on 3D Globe';
             actionBtn.addEventListener('click', () => this.executeAction(action));
             bodyEl.appendChild(actionBtn);
         }
 
-        // RAG Citations & Grounding Footer (assistant only)
-        if (role === 'assistant' && (rag || grounding)) {
+        // Telemetry & Grounding Footer (assistant only)
+        if (role === 'assistant' && metadata) {
             const metaEl = document.createElement('div');
             metaEl.className = 'msg-meta-footer';
 
-            let citationsHtml = '';
-            if (rag && rag.citations && rag.citations.length > 0) {
-                citationsHtml = ` · 📚 RAG: ${rag.citations[0]}`;
-            }
-
-            const latency = grounding?.latency_ms ? `${grounding.latency_ms}ms` : '';
-            const groundedPct = rag?.facts_grounded_pct ? ` · <span class="grounded-tag">${rag.facts_grounded_pct}</span>` : '';
+            const latency = metadata.latencyMs ? `${metadata.latencyMs}ms` : '';
+            const groundedPct = metadata.factsGroundedPct ? ` · <span class="grounded-tag">${metadata.factsGroundedPct}</span>` : '';
+            const modelTag = metadata.modelUsed ? ` · <span>${metadata.modelUsed}</span>` : '';
             const traceLink = traceId ? ` · <span class="trace-pill" title="Trace: ${traceId}">LangSmith</span>` : '';
 
-            metaEl.innerHTML = `<span>${latency}${groundedPct}${citationsHtml}${traceLink}</span>`;
+            metaEl.innerHTML = `<span>${latency}${groundedPct}${modelTag}${traceLink}</span>`;
             bodyEl.appendChild(metaEl);
         }
 

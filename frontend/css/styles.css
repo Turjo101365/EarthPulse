@@ -66,12 +66,20 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    overscroll-behavior: none;
     background-color: var(--bg-base);
     font-family: var(--font-ui);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
+}
+
+body {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
 }
 
 /* 3D WebGL Canvas */

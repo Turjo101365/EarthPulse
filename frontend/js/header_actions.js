@@ -418,14 +418,17 @@
                 const res = await fetch('/api/telemetry/stats');
                 if (!res.ok) return;
                 const data = await res.json();
-                const elFrp = document.getElementById('arch-telem-frp');
-                if (elFrp && data.active_frp_mw !== undefined) elFrp.textContent = `${Math.round(data.active_frp_mw).toLocaleString()} MW`;
-                const elLat = document.getElementById('arch-telem-latency');
-                if (elLat && data.postgis_latency_ms !== undefined) elLat.textContent = `${data.postgis_latency_ms} ms`;
-                const elReward = document.getElementById('arch-telem-reward');
-                if (elReward && data.rl_mean_reward !== undefined) elReward.textContent = `+${data.rl_mean_reward}`;
-                const elProt = document.getElementById('arch-telem-protected');
-                if (elProt && data.forest_protected_ha !== undefined) elProt.textContent = `${Math.round(data.forest_protected_ha).toLocaleString()} ha`;
+                const elFrp = document.getElementById('arch-telem-frp') || document.getElementById('telem-frp');
+                if (elFrp && data.active_frp_mw !== undefined) elFrp.textContent = `${Math.round(data.active_frp_mw || 0).toLocaleString()} MW`;
+                const elLat = document.getElementById('arch-telem-latency') || document.getElementById('telem-latency');
+                if (elLat && data.postgis_latency_ms !== undefined) elLat.textContent = `${data.postgis_latency_ms || 0} ms`;
+                const elReward = document.getElementById('arch-telem-reward') || document.getElementById('telem-reward');
+                if (elReward && data.rl_mean_reward !== undefined) {
+                    const r = data.rl_mean_reward;
+                    elReward.textContent = r > 0 ? `+${r}` : `${r}`;
+                }
+                const elProt = document.getElementById('arch-telem-protected') || document.getElementById('telem-protected');
+                if (elProt && data.forest_protected_ha !== undefined) elProt.textContent = `${Math.round(data.forest_protected_ha || 0).toLocaleString()} ha`;
             } catch (e) {
                 console.warn('Telemetry HUD fetch error:', e);
             }

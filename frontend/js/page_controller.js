@@ -348,13 +348,16 @@
                 if (!res.ok) return;
                 const d = await res.json();
                 const elFrp = document.getElementById('sp-telem-frp');
-                if (elFrp && d.active_frp_mw !== undefined) elFrp.textContent = `${Math.round(d.active_frp_mw).toLocaleString()} MW`;
+                if (elFrp && d.active_frp_mw !== undefined) elFrp.textContent = `${Math.round(d.active_frp_mw || 0).toLocaleString()} MW`;
                 const elLat = document.getElementById('sp-telem-latency');
-                if (elLat && d.postgis_latency_ms !== undefined) elLat.textContent = `${d.postgis_latency_ms} ms`;
+                if (elLat && d.postgis_latency_ms !== undefined) elLat.textContent = `${d.postgis_latency_ms || 0} ms`;
                 const elReward = document.getElementById('sp-telem-reward');
-                if (elReward && d.rl_mean_reward !== undefined) elReward.textContent = `+${d.rl_mean_reward}`;
+                if (elReward && d.rl_mean_reward !== undefined) {
+                    const r = d.rl_mean_reward;
+                    elReward.textContent = r > 0 ? `+${r}` : `${r}`;
+                }
                 const elProt = document.getElementById('sp-telem-protected');
-                if (elProt && d.forest_protected_ha !== undefined) elProt.textContent = `${Math.round(d.forest_protected_ha).toLocaleString()} ha`;
+                if (elProt && d.forest_protected_ha !== undefined) elProt.textContent = `${Math.round(d.forest_protected_ha || 0).toLocaleString()} ha`;
             } catch (e) {
                 console.warn('Telemetry HUD fetch error:', e);
             }
@@ -434,15 +437,18 @@
                 const d = await res.json();
 
                 const elFrp = document.getElementById('sp-grafana-frp');
-                if (elFrp && d.active_frp_mw !== undefined) elFrp.textContent = `${Math.round(d.active_frp_mw).toLocaleString()} MW`;
+                if (elFrp && d.active_frp_mw !== undefined) elFrp.textContent = `${Math.round(d.active_frp_mw || 0).toLocaleString()} MW`;
                 const elLat = document.getElementById('sp-grafana-latency');
-                if (elLat && d.postgis_latency_ms !== undefined) elLat.textContent = `${d.postgis_latency_ms} ms`;
+                if (elLat && d.postgis_latency_ms !== undefined) elLat.textContent = `${d.postgis_latency_ms || 0} ms`;
                 const elReward = document.getElementById('sp-grafana-reward');
-                if (elReward && d.rl_mean_reward !== undefined) elReward.textContent = `+${d.rl_mean_reward}`;
+                if (elReward && d.rl_mean_reward !== undefined) {
+                    const r = d.rl_mean_reward;
+                    elReward.textContent = r > 0 ? `+${r}` : `${r}`;
+                }
                 const elProt = document.getElementById('sp-grafana-protected');
-                if (elProt && d.forest_protected_ha !== undefined) elProt.textContent = `${Math.round(d.forest_protected_ha).toLocaleString()} ha`;
+                if (elProt && d.forest_protected_ha !== undefined) elProt.textContent = `${Math.round(d.forest_protected_ha || 0).toLocaleString()} ha`;
                 const elLag = document.getElementById('sp-grafana-lag');
-                if (elLag && d.firms_ingestion_lag_sec !== undefined) elLag.textContent = `${d.firms_ingestion_lag_sec}s`;
+                if (elLag && d.firms_ingestion_lag_sec !== undefined) elLag.textContent = `${d.firms_ingestion_lag_sec || 0}s`;
                 const elDrop = document.getElementById('sp-grafana-drop');
                 if (elDrop && d.dedup_drop_ratio !== undefined) elDrop.textContent = `${Math.round(d.dedup_drop_ratio * 100)}%`;
 

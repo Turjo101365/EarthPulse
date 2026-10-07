@@ -123,19 +123,19 @@
         <div class="telemetry-strip">
             <div class="telem-pill">
                 <span class="lbl">Active FRP</span>
-                <span class="val" id="hud-active-frp">1,482 MW</span>
+                <span class="val" id="hud-active-frp">0 MW</span>
             </div>
             <div class="telem-pill blue">
                 <span class="lbl">PostGIS p95</span>
-                <span class="val" id="hud-postgis-latency">42 ms</span>
+                <span class="val" id="hud-postgis-latency">0 ms</span>
             </div>
             <div class="telem-pill rl">
                 <span class="lbl">RL Reward</span>
-                <span class="val" id="hud-rl-reward">+492.6</span>
+                <span class="val" id="hud-rl-reward">0</span>
             </div>
             <div class="telem-pill rl">
                 <span class="lbl">Protected</span>
-                <span class="val" id="hud-forest-protected">14,200 ha</span>
+                <span class="val" id="hud-forest-protected">0 ha</span>
             </div>
         </div>
 
@@ -980,19 +980,19 @@ reward = (
                     </div>
                     <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:12px;">
                         <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
-                            <div style="font-size:1.2rem; font-weight:700; color:#f97316;" id="sp-telem-frp">1,482 MW</div>
+                            <div style="font-size:1.2rem; font-weight:700; color:#f97316;" id="sp-telem-frp">0 MW</div>
                             <div style="font-size:0.72rem; color:#94a3b8;">Total Active FRP</div>
                         </div>
                         <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
-                            <div style="font-size:1.2rem; font-weight:700; color:#38bdf8;" id="sp-telem-latency">42 ms</div>
+                            <div style="font-size:1.2rem; font-weight:700; color:#38bdf8;" id="sp-telem-latency">0 ms</div>
                             <div style="font-size:0.72rem; color:#94a3b8;">PostGIS Query (p95)</div>
                         </div>
                         <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
-                            <div style="font-size:1.2rem; font-weight:700; color:#10b981;" id="sp-telem-reward">+492.6</div>
+                            <div style="font-size:1.2rem; font-weight:700; color:#10b981;" id="sp-telem-reward">0</div>
                             <div style="font-size:0.72rem; color:#94a3b8;">RL Episode Reward</div>
                         </div>
                         <div style="background:#090d16; padding:12px; border-radius:8px; border:1px solid #334155;">
-                            <div style="font-size:1.2rem; font-weight:700; color:#10b981;" id="sp-telem-protected">14,200 ha</div>
+                            <div style="font-size:1.2rem; font-weight:700; color:#10b981;" id="sp-telem-protected">0 ha</div>
                             <div style="font-size:0.72rem; color:#94a3b8;">Forest Protected</div>
                         </div>
                     </div>
@@ -1081,15 +1081,15 @@ reward = (
                         <div class="card-title"><span>🎯 PPO Reward Formulation</span></div>
                         <div class="kpi-row">
                             <div class="kpi-box">
-                                <div class="val" style="color:#10b981;">+492.6</div>
+                                <div class="val" style="color:#10b981;">0</div>
                                 <div class="lbl">Episode Reward</div>
                             </div>
                             <div class="kpi-box">
-                                <div class="val" style="color:#38bdf8;">14,200</div>
+                                <div class="val" style="color:#38bdf8;">0</div>
                                 <div class="lbl">Hectares Saved</div>
                             </div>
                             <div class="kpi-box">
-                                <div class="val" style="color:#f97316;">89.4%</div>
+                                <div class="val" style="color:#f97316;">0%</div>
                                 <div class="lbl">Containment Pct</div>
                             </div>
                         </div>
@@ -1137,22 +1137,22 @@ reward = (
                 <div class="kpi-grid" style="margin-top:16px;">
                     <div class="kpi-card">
                         <div class="kpi-label">Total Active FRP</div>
-                        <div class="kpi-val" id="sp-grafana-frp" style="color:#f97316;">1,482 MW</div>
+                        <div class="kpi-val" id="sp-grafana-frp" style="color:#f97316;">0 MW</div>
                         <div class="kpi-sub">Dual-Sensor Harmonized</div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">PostGIS Query Latency</div>
-                        <div class="kpi-val" id="sp-grafana-latency" style="color:#38bdf8;">42 ms</div>
+                        <div class="kpi-val" id="sp-grafana-latency" style="color:#38bdf8;">0 ms</div>
                         <div class="kpi-sub">p95 Spatial Bounding Box</div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">RL Episode Reward</div>
-                        <div class="kpi-val" id="sp-grafana-reward" style="color:#10b981;">+492.6</div>
+                        <div class="kpi-val" id="sp-grafana-reward" style="color:#10b981;">0</div>
                         <div class="kpi-sub">Mean Policy Rollout</div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">Forest Protected</div>
-                        <div class="kpi-val" id="sp-grafana-protected" style="color:#10b981;">14,200 ha</div>
+                        <div class="kpi-val" id="sp-grafana-protected" style="color:#10b981;">0 ha</div>
                         <div class="kpi-sub">Containment Established</div>
                     </div>
                     <div class="kpi-card">
@@ -1172,13 +1172,13 @@ reward = (
                 <div class="card-title"><span>📡 Prometheus /metrics Endpoint Stream</span></div>
                 <pre class="code-container" id="sp-prometheus-feed" style="max-height: 260px; overflow-y: auto;"># HELP fireguard_active_frp_megawatts Total active fire radiative power
 # TYPE fireguard_active_frp_megawatts gauge
-fireguard_active_frp_megawatts 1482.0
+fireguard_active_frp_megawatts 0.0
 # HELP fireguard_rl_episode_reward PPO policy mean reward
 # TYPE fireguard_rl_episode_reward gauge
-fireguard_rl_episode_reward 492.6
+fireguard_rl_episode_reward 0.0
 # HELP fireguard_query_latency_ms Spatial query duration
 # TYPE fireguard_query_latency_ms gauge
-fireguard_query_latency_ms 42.0</pre>
+fireguard_query_latency_ms 0.0</pre>
             </div>
         </div>
     </div>

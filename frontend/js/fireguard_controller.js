@@ -222,16 +222,19 @@ export class FireGuardController {
         if (!stats) return;
 
         const elFrp = document.getElementById('hud-active-frp');
-        if (elFrp) elFrp.textContent = `${stats.active_frp_mw.toLocaleString()} MW`;
+        if (elFrp) elFrp.textContent = `${(stats.active_frp_mw || 0).toLocaleString()} MW`;
 
         const elLatency = document.getElementById('hud-postgis-latency');
-        if (elLatency) elLatency.textContent = `${stats.postgis_latency_ms} ms`;
+        if (elLatency) elLatency.textContent = `${stats.postgis_latency_ms || 0} ms`;
 
         const elReward = document.getElementById('hud-rl-reward');
-        if (elReward) elReward.textContent = `+${stats.rl_mean_reward}`;
+        if (elReward) {
+            const r = stats.rl_mean_reward || 0;
+            elReward.textContent = r > 0 ? `+${r}` : `${r}`;
+        }
 
         const elProtected = document.getElementById('hud-forest-protected');
-        if (elProtected) elProtected.textContent = `${stats.forest_protected_ha.toLocaleString()} ha`;
+        if (elProtected) elProtected.textContent = `${(stats.forest_protected_ha || 0).toLocaleString()} ha`;
     }
 
     /**
